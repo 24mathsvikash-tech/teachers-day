@@ -13,7 +13,6 @@ const teachersData = [
   { id: 12, name: "INDIKA ARNAKAL", image: "images/teachers/indika_arnakal.jpg", adjectives: ["Creative", "Patient", "Encouraging", "Friendly"] },
   { id: 13, name: "Jayanti Dash", image: "images/teachers/jayanti_dash.jpg", adjectives: ["Inspiring", "Kind", "Understanding", "Helpful"] },
   { id: 15, name: "Khairunnisa Sayed", image: "images/teachers/khairunnisa_sayed.jpg", adjectives: ["Patient", "Friendly", "Encouraging", "Kind"] },
-  { id: 16, name: "Komal Kumari", image: "images/teachers/komal_kumari.jpg", adjectives: ["Energetic", "Creative", "Engaging", "Sweet"] },
   { id: 17, name: "Mamta Yadav", image: "images/teachers/mamta_yadav.jpg", adjectives: ["Inspiring", "Kind", "Helpful", "Dedicated"] },
   { id: 19, name: "Neeta Patil", image: "images/teachers/neeta_patil.jpg", adjectives: ["Knowledgeable", "Kind", "Helpful", "Sweet"] },
   { id: 20, name: "PANKAJ", image: "images/teachers/pankaj.jpg", adjectives: ["Energetic", "Dedicated", "Friendly", "Smart"] },
