@@ -10,12 +10,34 @@
 
   <header class="hero">
     <h1>🎉 Happy Teachers' Day! 🎉</h1>
-    <p>Select a teacher, pick their best qualities, choose an emoji, and leave your wishes!</p>
+    <p>Select your class and roll number, pick your teachers' best qualities, and share your appreciation!</p>
+    
+    <div class="student-info-box">
+      <div class="input-group">
+        <label for="student-grade">Select Class:</label>
+        <select id="student-grade">
+          <option value="">-- Choose Class --</option>
+          <option value="Grade 6">Grade 6</option>
+          <option value="Grade 7">Grade 7</option>
+          <option value="Grade 8">Grade 8</option>
+          <option value="Grade 9">Grade 9</option>
+          <option value="Grade 10">Grade 10</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="student-roll">Select Roll No:</label>
+        <select id="student-roll">
+          <option value="">-- Choose Roll No --</option>
+          <!-- Options 1 to 40 populated dynamically by app.js -->
+        </select>
+      </div>
+    </div>
   </header>
 
   <main class="container">
     <div id="teacher-grid" class="teacher-grid">
-      <!-- All teacher cards display directly here -->
+      <!-- Cards rendered from app.js -->
     </div>
   </main>
 
