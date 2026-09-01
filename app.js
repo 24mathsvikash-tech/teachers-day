@@ -53,7 +53,7 @@ function renderTeachers(teachers) {
       <img src="${teacher.image}" alt="${teacher.name}" onerror="this.src='https://via.placeholder.com/110?text=Teacher'">
       <h3>${teacher.name}</h3>
       
-      <div class="rating-label">Share Your Impression:</div>
+      <div class="rating-label">Share Your Impression (Required):</div>
       <div class="emojis-scale" data-rating="0">
         <span class="emoji-face" data-value="1" title="1 - Okay" onclick="rateEmoji(this)">😠</span>
         <span class="emoji-face" data-value="2" title="2 - Fair" onclick="rateEmoji(this)">🙁</span>
@@ -62,7 +62,7 @@ function renderTeachers(teachers) {
         <span class="emoji-face" data-value="5" title="5 - Awesome!" onclick="rateEmoji(this)">😍</span>
       </div>
 
-      <div class="tags-label">Select Qualities:</div>
+      <div class="tags-label">Select Qualities (At least 1 Required):</div>
       <div class="tags">
         ${adjectivesHTML}
       </div>
@@ -123,8 +123,16 @@ function submitAllWishes() {
     return;
   }
 
+  // Prevent duplicate submissions per student via local storage
+  const studentKey = `submitted_${grade}_${rollNumber}`;
+  if (localStorage.getItem(studentKey)) {
+    alert(`Submission blocked! Feedback for ${grade}, Roll No. ${rollNumber} has already been submitted from this device.`);
+    return;
+  }
+
   const cards = document.querySelectorAll('.card');
   const submissions = [];
+  let validationError = false;
 
   cards.forEach(card => {
     const teacherName = card.getAttribute('data-teacher-name');
@@ -132,18 +140,32 @@ function submitAllWishes() {
     const message = card.querySelector('.wish-input').value.trim();
     const selectedTags = Array.from(card.querySelectorAll('.tag.selected')).map(t => t.innerText);
 
+    // If student has entered anything for this card, enforce full completeness
     if (rating !== '0' || selectedTags.length > 0 || message.length > 0) {
+      if (rating === '0') {
+        alert(`Please choose an emoji rating for ${teacherName}!`);
+        validationError = true;
+        return;
+      }
+      if (selectedTags.length === 0) {
+        alert(`Please select at least one quality tag for ${teacherName}!`);
+        validationError = true;
+        return;
+      }
+
       submissions.push({
         teacherName: teacherName,
-        rating: rating !== '0' ? rating : 'Not rated',
+        rating: rating,
         qualities: selectedTags,
         message: message
       });
     }
   });
 
+  if (validationError) return;
+
   if (submissions.length === 0) {
-    alert('Please choose an emoji, select a quality, or leave a note for at least one teacher!');
+    alert('Please select a rating emoji AND at least one quality for at least one teacher!');
     return;
   }
 
@@ -164,7 +186,10 @@ function submitAllWishes() {
     body: JSON.stringify(payload)
   })
   .then(() => {
-    alert(`Thank you! Your feedback has been saved to the Google Sheet for ${submissions.length} teacher(s)! 🎉`);
+    // Save record to local storage to prevent resubmission
+    localStorage.setItem(studentKey, 'true');
+
+    alert(`Thank you! Your feedback has been saved for ${submissions.length} teacher(s)! 🎉`);
 
     // Reset card inputs
     cards.forEach(card => {
