@@ -1,4 +1,7 @@
-// Embedded teacher list (updated)
+// Replace this URL with your Google Apps Script Web App URL
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw159sXtUMGyvCQCl1QprOyrgxUeBg58NLLBttAIkIjbROmVNaoAC5_Y3b-iLrS6bhwmA/exec';
+
+// Teacher list
 const teachersData = [
   { id: 3, name: "Akshay Kamble", image: "images/teachers/akshay_kamble.jpg", adjectives: ["Creative", "Supportive", "Dedicated", "Polite"] },
   { id: 4, name: "Amit Gupta", image: "images/teachers/amit_gupta.jpg", adjectives: ["Engaging", "Patient", "Smart", "Friendly"] },
@@ -30,7 +33,7 @@ const teachersData = [
   { id: 40, name: "VINOD TAPASE", image: "images/teachers/vinod_tapase.jpg", adjectives: ["Dedicated", "Kind", "Calm", "Helpful"] }
 ];
 
-// Function to render all teacher cards
+// Render teacher cards
 function renderTeachers(teachers) {
   const grid = document.getElementById('teacher-grid');
   if (!grid) return;
@@ -70,7 +73,7 @@ function renderTeachers(teachers) {
     grid.appendChild(card);
   });
 
-  // Add single global submit button below the grid
+  // Global submit button
   let submitContainer = document.getElementById('global-submit-container');
   if (!submitContainer) {
     submitContainer = document.createElement('div');
@@ -78,7 +81,7 @@ function renderTeachers(teachers) {
     submitContainer.style.textAlign = 'center';
     submitContainer.style.margin = '2rem 0 4rem';
     submitContainer.innerHTML = `
-      <button class="btn-submit" style="max-width: 300px; padding: 0.8rem 1.5rem; font-size: 1.1rem;" onclick="submitAllWishes()">
+      <button id="submit-btn" class="btn-submit" style="max-width: 300px; padding: 0.8rem 1.5rem; font-size: 1.1rem;" onclick="submitAllWishes()">
         Send All Appreciations 🎉
       </button>
     `;
@@ -86,12 +89,10 @@ function renderTeachers(teachers) {
   }
 }
 
-// Toggle selection for adjective tags
 function toggleTag(element) {
   element.classList.toggle('selected');
 }
 
-// Emoji 5-Scale Rating Logic
 function rateEmoji(element) {
   const container = element.parentElement;
   const ratingValue = element.getAttribute('data-value');
@@ -108,10 +109,22 @@ function rateEmoji(element) {
   container.setAttribute('data-rating', ratingValue);
 }
 
-// Single global submit handler for all filled cards
+// Submit all teacher feedback directly to Google Sheet
 function submitAllWishes() {
+  const grade = document.getElementById('student-grade').value;
+  const rollNumber = document.getElementById('student-roll').value;
+
+  if (!grade) {
+    alert('Please select your Class before submitting!');
+    return;
+  }
+  if (!rollNumber) {
+    alert('Please select your Roll Number before submitting!');
+    return;
+  }
+
   const cards = document.querySelectorAll('.card');
-  let submittedCount = 0;
+  const submissions = [];
 
   cards.forEach(card => {
     const teacherName = card.getAttribute('data-teacher-name');
@@ -119,26 +132,62 @@ function submitAllWishes() {
     const message = card.querySelector('.wish-input').value.trim();
     const selectedTags = Array.from(card.querySelectorAll('.tag.selected')).map(t => t.innerText);
 
-    // Check if the student filled out any feedback for this card
     if (rating !== '0' || selectedTags.length > 0 || message.length > 0) {
-      submittedCount++;
+      submissions.push({
+        teacherName: teacherName,
+        rating: rating !== '0' ? rating : 'Not rated',
+        qualities: selectedTags,
+        message: message
+      });
+    }
+  });
 
-      // Reset card inputs after capturing
+  if (submissions.length === 0) {
+    alert('Please choose an emoji, select a quality, or leave a note for at least one teacher!');
+    return;
+  }
+
+  const submitBtn = document.getElementById('submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Submitting... ⏳';
+
+  const payload = {
+    grade: grade,
+    rollNumber: rollNumber,
+    submissions: submissions
+  };
+
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    alert(`Thank you! Your feedback has been saved to the Google Sheet for ${submissions.length} teacher(s)! 🎉`);
+
+    // Reset card inputs
+    cards.forEach(card => {
       card.querySelector('.wish-input').value = '';
       card.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
       card.querySelectorAll('.emoji-face').forEach(e => e.classList.remove('active'));
       card.querySelector('.emojis-scale').setAttribute('data-rating', '0');
-    }
-  });
+    });
 
-  if (submittedCount === 0) {
-    alert('Please choose an emoji, select a quality, or leave a note for at least one teacher before submitting!');
-  } else {
-    alert(`Thank you! Your appreciation has been sent for ${submittedCount} teacher(s)! 🎉`);
-  }
+    document.getElementById('student-grade').value = '';
+    document.getElementById('student-roll').value = '';
+
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Send All Appreciations 🎉';
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Failed to send submissions. Please check your internet connection.');
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Send All Appreciations 🎉';
+  });
 }
 
-// Render cards on initial load
 document.addEventListener('DOMContentLoaded', () => {
   renderTeachers(teachersData);
 });
