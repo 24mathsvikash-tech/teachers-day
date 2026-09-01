@@ -67,7 +67,7 @@ function renderTeachers(teachers) {
         ${adjectivesHTML}
       </div>
 
-      <textarea class="wish-input" placeholder="Write your warm message or feedback here..."></textarea>
+      <textarea class="wish-input" placeholder="Write your warm message or feedback here... (Optional)"></textarea>
     `;
 
     grid.appendChild(card);
@@ -132,41 +132,33 @@ function submitAllWishes() {
 
   const cards = document.querySelectorAll('.card');
   const submissions = [];
-  let validationError = false;
 
-  cards.forEach(card => {
+  // Strictly enforce rating and quality selection for EVERY teacher card
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
     const teacherName = card.getAttribute('data-teacher-name');
     const rating = card.querySelector('.emojis-scale').getAttribute('data-rating');
     const message = card.querySelector('.wish-input').value.trim();
     const selectedTags = Array.from(card.querySelectorAll('.tag.selected')).map(t => t.innerText);
 
-    // If student has entered anything for this card, enforce full completeness
-    if (rating !== '0' || selectedTags.length > 0 || message.length > 0) {
-      if (rating === '0') {
-        alert(`Please choose an emoji rating for ${teacherName}!`);
-        validationError = true;
-        return;
-      }
-      if (selectedTags.length === 0) {
-        alert(`Please select at least one quality tag for ${teacherName}!`);
-        validationError = true;
-        return;
-      }
-
-      submissions.push({
-        teacherName: teacherName,
-        rating: rating,
-        qualities: selectedTags,
-        message: message
-      });
+    if (rating === '0') {
+      alert(`Please select an emoji rating for ${teacherName}! All teachers must be rated.`);
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
     }
-  });
 
-  if (validationError) return;
+    if (selectedTags.length === 0) {
+      alert(`Please select at least one quality tag for ${teacherName}! All teachers must have at least one quality selected.`);
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
 
-  if (submissions.length === 0) {
-    alert('Please select a rating emoji AND at least one quality for at least one teacher!');
-    return;
+    submissions.push({
+      teacherName: teacherName,
+      rating: rating,
+      qualities: selectedTags,
+      message: message
+    });
   }
 
   const submitBtn = document.getElementById('submit-btn');
@@ -186,12 +178,11 @@ function submitAllWishes() {
     body: JSON.stringify(payload)
   })
   .then(() => {
-    // Save record to local storage to prevent resubmission
     localStorage.setItem(studentKey, 'true');
 
-    alert(`Thank you! Your feedback has been saved for ${submissions.length} teacher(s)! 🎉`);
+    alert(`Thank you! Your feedback for all ${submissions.length} teachers has been saved successfully! 🎉`);
 
-    // Reset card inputs
+    // Reset inputs
     cards.forEach(card => {
       card.querySelector('.wish-input').value = '';
       card.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
