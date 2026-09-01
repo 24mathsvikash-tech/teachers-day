@@ -1,36 +1,34 @@
 // Replace this URL with your Google Apps Script Web App URL
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw159sXtUMGyvCQCl1QprOyrgxUeBg58NLLBttAIkIjbROmVNaoAC5_Y3b-iLrS6bhwmA/exec';
 
-// Teacher list using root filenames directly as saved in your GitHub repository
 const teachersData = [
-  { id: 3, name: "Akshay Kamble", image: "akshay_kamble.jpg.jpeg", adjectives: ["Creative", "Supportive", "Dedicated", "Polite"] },
-  { id: 4, name: "Amit Gupta", image: "amit_gupta.jpg.jpeg", adjectives: ["Engaging", "Patient", "Smart", "Friendly"] },
-  { id: 6, name: "ANAGHA SAMUDRA", image: "anagha_samudra.jpg.jpeg", adjectives: ["Knowledgeable", "Dedicated", "Strict & Fair", "Polite"] },
-  { id: 8, name: "Ashutosh Thorat", image: "ashutosh_thorat.jpg.jpeg", adjectives: ["Energetic", "Humorous", "Creative", "Smart"] },
-  { id: 9, name: "Binita Mohapatra", image: "binita_mohapatra.jpg.jpeg", adjectives: ["Kind", "Inspiring", "Encouraging", "Patient"] },
-  { id: 10, name: "Dhara Vyas", image: "dhara_vyas.jpg.jpeg", adjectives: ["Engaging", "Friendly", "Supportive", "Sweet"] },
-  { id: 11, name: "Dinesh Lagad", image: "dinesh_lagad.jpg.jpeg", adjectives: ["Dedicated", "Knowledgeable", "Helpful", "Calm"] },
-  { id: 12, name: "INDIKA ARNAKAL", image: "indika_arnakal.jpg.jpeg", adjectives: ["Creative", "Patient", "Encouraging", "Friendly"] },
-  { id: 13, name: "Jayanti Dash", image: "jayanti_dash.jpg.jpeg", adjectives: ["Inspiring", "Kind", "Understanding", "Helpful"] },
-  { id: 15, name: "Khairunnisa Sayed", image: "khairunnisa_sayed.jpg.jpeg", adjectives: ["Patient", "Friendly", "Encouraging", "Kind"] },
-  { id: 17, name: "Mamta Yadav", image: "mamta_yadav.jpg.jpeg", adjectives: ["Inspiring", "Kind", "Helpful", "Dedicated"] },
-  { id: 19, name: "Neeta Patil", image: "neeta_patil.jpg.jpeg", adjectives: ["Knowledgeable", "Kind", "Helpful", "Sweet"] },
-  { id: 20, name: "PANKAJ", image: "pankaj.jpg.jpeg", adjectives: ["Energetic", "Dedicated", "Friendly", "Smart"] },
-  { id: 22, name: "PRASANT KUMAR PANDEY", image: "prasant_kumar_pandey.jpg.jpeg", adjectives: ["Inspiring", "Helpful", "Engaging", "Dedicated"] },
-  { id: 23, name: "Prerna Poojari", image: "prerna_poojari.jpg.jpeg", adjectives: ["Creative", "Friendly", "Sweet", "Supportive"] },
-  { id: 24, name: "Priyanka Redekar", image: "priyanka_redekar.jpg.jpeg", adjectives: ["Patient", "Kind", "Encouraging", "Helpful"] },
-  { id: 25, name: "ROSHANI RAUT", image: "roshani_raut.jpg.jpeg", adjectives: ["Energetic", "Engaging", "Supportive", "Kind"] },
-  { id: 27, name: "Santoshi Padhi", image: "santoshi_padhi.jpg.jpeg", adjectives: ["Kind", "Patient", "Encouraging", "Sweet"] },
-  { id: 30, name: "SHALINI PANDEY", image: "shalini_pandey.jpg.jpeg", adjectives: ["Engaging", "Patient", "Creative", "Sweet"] },
-  { id: 31, name: "Sharvari Hirlekar", image: "sharvari_hirlekar.jpg.jpeg", adjectives: ["Encouraging", "Friendly", "Helpful", "Kind"] },
-  { id: 32, name: "SHRUTI SAXENA", image: "shruti_saxena.jpg.jpeg", adjectives: ["Creative", "Inspiring", "Supportive", "Energetic"] },
-  { id: 34, name: "SULOCHANA NAIR", image: "sulochana_nair.jpg.jpeg", adjectives: ["Inspiring", "Dedicated", "Encouraging", "Calm"] },
-  { id: 36, name: "Swati Khaire", image: "swati_khaire.jpg.jpeg", adjectives: ["Patient", "Kind", "Understanding", "Dedicated"] },
-  { id: 38, name: "Vikash Yadav", image: "vikash_yadav.jpg.jpeg", adjectives: ["Awesome", "Smart", "Encouraging", "Helpful"] },
-  { id: 39, name: "VINAY KUMAR UPADHYAY", image: "vinay_kumar_upadhyay.jpg.jpeg", adjectives: ["Energetic", "Friendly", "Supportive", "Knowledgeable"] },
-  { id: 40, name: "VINOD TAPASE", image: "vinod_tapase.jpg.jpeg", adjectives: ["Dedicated", "Kind", "Calm", "Helpful"] }
+  { id: 3, name: "Akshay Kamble", image: "./akshay_kamble.jpg.jpeg", adjectives: ["Creative", "Supportive", "Dedicated", "Polite"] },
+  { id: 4, name: "Amit Gupta", image: "./amit_gupta.jpg.jpeg", adjectives: ["Engaging", "Patient", "Smart", "Friendly"] },
+  { id: 6, name: "ANAGHA SAMUDRA", image: "./anagha_samudra.jpg.jpeg", adjectives: ["Knowledgeable", "Dedicated", "Strict & Fair", "Polite"] },
+  { id: 8, name: "Ashutosh Thorat", image: "./ashutosh_thorat.jpg.jpeg", adjectives: ["Energetic", "Humorous", "Creative", "Smart"] },
+  { id: 9, name: "Binita Mohapatra", image: "./binita_mohapatra.jpg.jpeg", adjectives: ["Kind", "Inspiring", "Encouraging", "Patient"] },
+  { id: 10, name: "Dhara Vyas", image: "./dhara_vyas.jpg.jpeg", adjectives: ["Engaging", "Friendly", "Supportive", "Sweet"] },
+  { id: 11, name: "Dinesh Lagad", image: "./dinesh_lagad.jpg.jpeg", adjectives: ["Dedicated", "Knowledgeable", "Helpful", "Calm"] },
+  { id: 12, name: "INDIKA ARNAKAL", image: "./indika_arnakal.jpg.jpeg", adjectives: ["Creative", "Patient", "Encouraging", "Friendly"] },
+  { id: 13, name: "Jayanti Dash", image: "./jayanti_dash.jpg.jpeg", adjectives: ["Inspiring", "Kind", "Understanding", "Helpful"] },
+  { id: 15, name: "Khairunnisa Sayed", image: "./khairunnisa_sayed.jpg.jpeg", adjectives: ["Patient", "Friendly", "Encouraging", "Kind"] },
+  { id: 17, name: "Mamta Yadav", image: "./mamta_yadav.jpg.jpeg", adjectives: ["Inspiring", "Kind", "Helpful", "Dedicated"] },
+  { id: 19, name: "Neeta Patil", image: "./neeta_patil.jpg.jpeg", adjectives: ["Knowledgeable", "Kind", "Helpful", "Sweet"] },
+  { id: 20, name: "PANKAJ", image: "./pankaj.jpg.jpeg", adjectives: ["Energetic", "Dedicated", "Friendly", "Smart"] },
+  { id: 22, name: "PRASANT KUMAR PANDEY", image: "./prasant_kumar_pandey.jpg.jpeg", adjectives: ["Inspiring", "Helpful", "Engaging", "Dedicated"] },
+  { id: 23, name: "Prerna Poojari", image: "./prerna_poojari.jpg.jpeg", adjectives: ["Creative", "Friendly", "Sweet", "Supportive"] },
+  { id: 24, name: "Priyanka Redekar", image: "./priyanka_redekar.jpg.jpeg", adjectives: ["Patient", "Kind", "Encouraging", "Helpful"] },
+  { id: 25, name: "ROSHANI RAUT", image: "./roshani_raut.jpg.jpeg", adjectives: ["Energetic", "Engaging", "Supportive", "Kind"] },
+  { id: 27, name: "Santoshi Padhi", image: "./santoshi_padhi.jpg.jpeg", adjectives: ["Kind", "Patient", "Encouraging", "Sweet"] },
+  { id: 30, name: "SHALINI PANDEY", image: "./shalini_pandey.jpg.jpeg", adjectives: ["Engaging", "Patient", "Creative", "Sweet"] },
+  { id: 31, name: "Sharvari Hirlekar", image: "./sharvari_hirlekar.jpg.jpeg", adjectives: ["Encouraging", "Friendly", "Helpful", "Kind"] },
+  { id: 32, name: "SHRUTI SAXENA", image: "./shruti_saxena.jpg.jpeg", adjectives: ["Creative", "Inspiring", "Supportive", "Energetic"] },
+  { id: 34, name: "SULOCHANA NAIR", image: "./sulochana_nair.jpg.jpeg", adjectives: ["Inspiring", "Dedicated", "Encouraging", "Calm"] },
+  { id: 36, name: "Swati Khaire", image: "./swati_khaire.jpg.jpeg", adjectives: ["Patient", "Kind", "Understanding", "Dedicated"] },
+  { id: 38, name: "Vikash Yadav", image: "./vikash_yadav.jpg.jpeg", adjectives: ["Awesome", "Smart", "Encouraging", "Helpful"] },
+  { id: 39, name: "VINAY KUMAR UPADHYAY", image: "./vinay_kumar_upadhyay.jpg.jpeg", adjectives: ["Energetic", "Friendly", "Supportive", "Knowledgeable"] },
+  { id: 40, name: "VINOD TAPASE", image: "./vinod_tapase.jpg.jpeg", adjectives: ["Dedicated", "Kind", "Calm", "Helpful"] }
 ];
-
 // Render teacher cards
 function renderTeachers(teachers) {
   const grid = document.getElementById('teacher-grid');
