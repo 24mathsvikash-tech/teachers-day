@@ -1,0 +1,144 @@
+// Embedded teacher list (updated)
+const teachersData = [
+  { id: 3, name: "Akshay Kamble", image: "images/teachers/akshay_kamble.jpg", adjectives: ["Creative", "Supportive", "Dedicated", "Polite"] },
+  { id: 4, name: "Amit Gupta", image: "images/teachers/amit_gupta.jpg", adjectives: ["Engaging", "Patient", "Smart", "Friendly"] },
+  { id: 6, name: "ANAGHA SAMUDRA", image: "images/teachers/anagha_samudra.jpg", adjectives: ["Knowledgeable", "Dedicated", "Strict & Fair", "Polite"] },
+  { id: 8, name: "Ashutosh Thorat", image: "images/teachers/ashutosh_thorat.jpg", adjectives: ["Energetic", "Humorous", "Creative", "Smart"] },
+  { id: 9, name: "Binita Mohapatra", image: "images/teachers/binita_mohapatra.jpg", adjectives: ["Kind", "Inspiring", "Encouraging", "Patient"] },
+  { id: 10, name: "Dhara Vyas", image: "images/teachers/dhara_vyas.jpg", adjectives: ["Engaging", "Friendly", "Supportive", "Sweet"] },
+  { id: 11, name: "Dinesh Lagad", image: "images/teachers/dinesh_lagad.jpg", adjectives: ["Dedicated", "Knowledgeable", "Helpful", "Calm"] },
+  { id: 12, name: "INDIKA ARNAKAL", image: "images/teachers/indika_arnakal.jpg", adjectives: ["Creative", "Patient", "Encouraging", "Friendly"] },
+  { id: 13, name: "Jayanti Dash", image: "images/teachers/jayanti_dash.jpg", adjectives: ["Inspiring", "Kind", "Understanding", "Helpful"] },
+  { id: 15, name: "Khairunnisa Sayed", image: "images/teachers/khairunnisa_sayed.jpg", adjectives: ["Patient", "Friendly", "Encouraging", "Kind"] },
+  { id: 16, name: "Komal Kumari", image: "images/teachers/komal_kumari.jpg", adjectives: ["Energetic", "Creative", "Engaging", "Sweet"] },
+  { id: 17, name: "Mamta Yadav", image: "images/teachers/mamta_yadav.jpg", adjectives: ["Inspiring", "Kind", "Helpful", "Dedicated"] },
+  { id: 19, name: "Neeta Patil", image: "images/teachers/neeta_patil.jpg", adjectives: ["Knowledgeable", "Kind", "Helpful", "Sweet"] },
+  { id: 20, name: "PANKAJ", image: "images/teachers/pankaj.jpg", adjectives: ["Energetic", "Dedicated", "Friendly", "Smart"] },
+  { id: 22, name: "PRASANT KUMAR PANDEY", image: "images/teachers/prasant_kumar_pandey.jpg", adjectives: ["Inspiring", "Helpful", "Engaging", "Dedicated"] },
+  { id: 23, name: "Prerna Poojari", image: "images/teachers/prerna_poojari.jpg", adjectives: ["Creative", "Friendly", "Sweet", "Supportive"] },
+  { id: 24, name: "Priyanka Redekar", image: "images/teachers/priyanka_redekar.jpg", adjectives: ["Patient", "Kind", "Encouraging", "Helpful"] },
+  { id: 25, name: "ROSHANI RAUT", image: "images/teachers/roshani_raut.jpg", adjectives: ["Energetic", "Engaging", "Supportive", "Kind"] },
+  { id: 27, name: "Santoshi Padhi", image: "images/teachers/santoshi_padhi.jpg", adjectives: ["Kind", "Patient", "Encouraging", "Sweet"] },
+  { id: 30, name: "SHALINI PANDEY", image: "images/teachers/shalini_pandey.jpg", adjectives: ["Engaging", "Patient", "Creative", "Sweet"] },
+  { id: 31, name: "Sharvari Hirlekar", image: "images/teachers/sharvari_hirlekar.jpg", adjectives: ["Encouraging", "Friendly", "Helpful", "Kind"] },
+  { id: 32, name: "SHRUTI SAXENA", image: "images/teachers/shruti_saxena.jpg", adjectives: ["Creative", "Inspiring", "Supportive", "Energetic"] },
+  { id: 33, name: "Sowmiya S V", image: "images/teachers/sowmiya_sv.jpg", adjectives: ["Patient", "Knowledgeable", "Kind", "Dedicated"] },
+  { id: 34, name: "SULOCHANA NAIR", image: "images/teachers/sulochana_nair.jpg", adjectives: ["Inspiring", "Dedicated", "Encouraging", "Calm"] },
+  { id: 36, name: "Swati Khaire", image: "images/teachers/swati_khaire.jpg", adjectives: ["Patient", "Kind", "Understanding", "Dedicated"] },
+  { id: 38, name: "Vikash Yadav", image: "images/teachers/vikash_yadav.jpg", adjectives: ["Awesome", "Smart", "Encouraging", "Helpful"] },
+  { id: 39, name: "VINAY KUMAR UPADHYAY", image: "images/teachers/vinay_kumar_upadhyay.jpg", adjectives: ["Energetic", "Friendly", "Supportive", "Knowledgeable"] },
+  { id: 40, name: "VINOD TAPASE", image: "images/teachers/vinod_tapase.jpg", adjectives: ["Dedicated", "Kind", "Calm", "Helpful"] }
+];
+
+// Function to render all teacher cards
+function renderTeachers(teachers) {
+  const grid = document.getElementById('teacher-grid');
+  if (!grid) return;
+  
+  grid.innerHTML = '';
+
+  teachers.forEach(teacher => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.setAttribute('data-teacher-name', teacher.name);
+
+    const adjectivesHTML = teacher.adjectives
+      .map(adj => `<span class="tag" onclick="toggleTag(this)">${adj}</span>`)
+      .join('');
+
+    card.innerHTML = `
+      <img src="${teacher.image}" alt="${teacher.name}" onerror="this.src='https://via.placeholder.com/110?text=Teacher'">
+      <h3>${teacher.name}</h3>
+      
+      <div class="rating-label">Share Your Impression:</div>
+      <div class="emojis-scale" data-rating="0">
+        <span class="emoji-face" data-value="1" title="1 - Okay" onclick="rateEmoji(this)">😠</span>
+        <span class="emoji-face" data-value="2" title="2 - Fair" onclick="rateEmoji(this)">🙁</span>
+        <span class="emoji-face" data-value="3" title="3 - Good" onclick="rateEmoji(this)">😐</span>
+        <span class="emoji-face" data-value="4" title="4 - Great" onclick="rateEmoji(this)">😊</span>
+        <span class="emoji-face" data-value="5" title="5 - Awesome!" onclick="rateEmoji(this)">😍</span>
+      </div>
+
+      <div class="tags-label">Select Qualities:</div>
+      <div class="tags">
+        ${adjectivesHTML}
+      </div>
+
+      <textarea class="wish-input" placeholder="Write your warm message or feedback here..."></textarea>
+    `;
+
+    grid.appendChild(card);
+  });
+
+  // Add single global submit button below the grid
+  let submitContainer = document.getElementById('global-submit-container');
+  if (!submitContainer) {
+    submitContainer = document.createElement('div');
+    submitContainer.id = 'global-submit-container';
+    submitContainer.style.textAlign = 'center';
+    submitContainer.style.margin = '2rem 0 4rem';
+    submitContainer.innerHTML = `
+      <button class="btn-submit" style="max-width: 300px; padding: 0.8rem 1.5rem; font-size: 1.1rem;" onclick="submitAllWishes()">
+        Send All Appreciations 🎉
+      </button>
+    `;
+    grid.after(submitContainer);
+  }
+}
+
+// Toggle selection for adjective tags
+function toggleTag(element) {
+  element.classList.toggle('selected');
+}
+
+// Emoji 5-Scale Rating Logic
+function rateEmoji(element) {
+  const container = element.parentElement;
+  const ratingValue = element.getAttribute('data-value');
+  const allFaces = container.querySelectorAll('.emoji-face');
+
+  allFaces.forEach(face => {
+    if (parseInt(face.getAttribute('data-value')) <= parseInt(ratingValue)) {
+      face.classList.add('active');
+    } else {
+      face.classList.remove('active');
+    }
+  });
+
+  container.setAttribute('data-rating', ratingValue);
+}
+
+// Single global submit handler for all filled cards
+function submitAllWishes() {
+  const cards = document.querySelectorAll('.card');
+  let submittedCount = 0;
+
+  cards.forEach(card => {
+    const teacherName = card.getAttribute('data-teacher-name');
+    const rating = card.querySelector('.emojis-scale').getAttribute('data-rating');
+    const message = card.querySelector('.wish-input').value.trim();
+    const selectedTags = Array.from(card.querySelectorAll('.tag.selected')).map(t => t.innerText);
+
+    // Check if the student filled out any feedback for this card
+    if (rating !== '0' || selectedTags.length > 0 || message.length > 0) {
+      submittedCount++;
+
+      // Reset card inputs after capturing
+      card.querySelector('.wish-input').value = '';
+      card.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
+      card.querySelectorAll('.emoji-face').forEach(e => e.classList.remove('active'));
+      card.querySelector('.emojis-scale').setAttribute('data-rating', '0');
+    }
+  });
+
+  if (submittedCount === 0) {
+    alert('Please choose an emoji, select a quality, or leave a note for at least one teacher before submitting!');
+  } else {
+    alert(`Thank you! Your appreciation has been sent for ${submittedCount} teacher(s)! 🎉`);
+  }
+}
+
+// Render cards on initial load
+document.addEventListener('DOMContentLoaded', () => {
+  renderTeachers(teachersData);
+});
