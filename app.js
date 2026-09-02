@@ -1,6 +1,61 @@
-// Replace this URL with your Google Apps Script Web App URL
+// Google Apps Script Web App URL
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw159sXtUMGyvCQCl1QprOyrgxUeBg58NLLBttAIkIjbROmVNaoAC5_Y3b-iLrS6bhwmA/exec';
 
+// Student Database mapped by Grade
+const studentsByGrade = {
+  "Grade 6": [
+    "AARADHYA RAHUL PAWAR", "AAROHI GANESH PATIL", "AARYA PATIL", "AARYA SINGH", "AAYUSHI ROY",
+    "ADITYA CHOUDHARY", "ADITYAKUMAR MOHANTY", "ADVAITH VAIDYANATH", "ANSHIKA SANJAYKUMAR GUPTA",
+    "ARJUN BHATTALWAR", "AVANIKA MAHESH FULSE", "Charmi Bagul", "DEVANSH SUTAR", "DHRUVI RAVI SINGH",
+    "HARDIK PANDEY", "HETH SUNIL NAKHUVA", "JAYDIP YOGESH GAGARE", "JAZZLEEN KAUR NAVEET VAID",
+    "JINAL DNYANESHWAR PATIL", "JINISHA PATIL", "K. PRAGATHE", "Kanu", "PRITHVI PAVAN RAUT",
+    "RADHIKA RAMSURAT MISHRA", "Rishi Karande", "RITIK RAJNISH PAYASI", "RUTVIKA PRITAM PATIL",
+    "S. SIVAKRISH", "SHLOK SAGAR SALUNKHE", "SHIVI SAXENA", "SONALI -", "TEJAS YOGESH KHAIRNAR",
+    "UMM E HANI", "VANSH YOGESH KUMAR", "VIHANA SAINATH PATIL", "YASHIKA SHARMA"
+  ],
+  "Grade 7": [
+    "AARADH DYANDEV KOLI", "AAYUSH BALWANT GUPTA", "AAYUSH JAGDISH PATIL", "AKRITI KUMARI",
+    "ANSH SANJAYKUMAR GUPTA", "ANSHU KAMLESH GAUD", "APOORV JWALITH BOMMI", "AVIYANSH GUPTA",
+    "BHAVYA SINGH", "DIVYA KISHANSINGH CHAUHAN", "DIVYANSHI VAISHYA", "GIA RAJVI SUNDARRAJ",
+    "INAAYA HOSSAIN", "JANVI KISHANSINGH CHOUHAN", "JASFER SAMPSON SASANI", "KIRTI LAXMAN GURJAR",
+    "MAHESH SANDEEP DIVATE", "MAYURESH PRAVIN MAHIRE", "MOHIT YATIN PALAV", "Naman Patil",
+    "NANDINI BIPIN YADAV", "PRATHAM MAHESH SHETTY", "PRATIK PAL", "PRISHA ANURA", "RADHIKA PARMAR",
+    "RAJNANDINI SAHURAJ DIGGE", "RUDRA SAMEER BERDE", "RUNMAYEE VIJAY MARATHE", "SAKSHAM MALUSARE",
+    "SAMRUDDHI PHADNIS", "Satyam Yadav", "SOHAM DEBKUMAR PAUL", "Soham Rathod", "SWARA SANDIP SHEWALE",
+    "SWASTIK ASHOK SAHU", "TANMAYEE VIJAY MARATHE", "TASHI MAHESH SHETTY", "VEERESH KUMARESH KALAL",
+    "YASH MAHESH DATILKAR"
+  ],
+  "Grade 8": [
+    "AARADHAYA TRIPATHI", "AARAV VIJAY SINGH", "ADITYA RAJKUMAR SINGH", "ANANT DUBEY",
+    "ANURAG PRADEEP PANDEY", "ANVI PANDEY", "ARNAV KUMAR", "ARYA DUBEY", "AVANI TUSHAR KAMBLE",
+    "DURVA SACHIN CHAVAN", "HARSHAL KRISHNA LADWA", "HIMANSHU JANGID", "ISHWARI MANDARE",
+    "JIDNYASA NANDKISHOR PATIL", "KABIR YOGESH MHATRE", "KANISH GANESH PAKKI", "KARAN KUNAL JOSHI",
+    "KAUSHAL GANESH PATIL", "KAVYA GANESH PAKKI", "Khushi Dhongadi", "KUSMITHA SRI BOMMI",
+    "MAYANK KUMAR", "NADEESH MANTARAM KONAR", "NEHA YOGESH KUMAR", "NIRBHAY SANDESH PATIL",
+    "RAKSHITA SAGAR GAIKWAD", "RISHI GYANCHANDRA PAL", "SAKSHI PANDEY", "SAKSHAM KIRAN PATIL",
+    "SAKSHAM SHAMBHULAL JAAT", "SHUBHAM SWAPNIL SAKALE", "SNEHA SHREE GHADIA", "SWARAJ REVANNATH ROTE",
+    "TAJASA MAHIRE", "TANISHQ VISHAL PATIL", "Vihan Choudhari"
+  ],
+  "Grade 9": [
+    "AAYAAN HARDIK GALA", "AMAN JITENDRA GOSWAMI", "ANSH GYANCHANDRA PAL", "ANSHU LALMAN CHOUDHARY",
+    "ATHRAW VINOD SONWANE", "DEVANSH JITENDRA SHARMA", "GARGI MAHESH DAWANGE", "JEET DATTATRAY VIRKAR",
+    "KAVITA LAXMANLAL GURJAR", "KETAN RAVINDRA PRAJAPATI", "NIVEDITA NEERAJ DUBEY", "Pratam Mali",
+    "RUDRA DIVEKAR", "SAMARTH ABHAY JADHAV", "SAPNA RAMMILAN HARIJAN", "SARTHAK ARUN JADHAV",
+    "VINAYAK VIJAY GUPTA", "YUG SINGH SENGAR"
+  ],
+  "Grade 10": [
+    "ALOK YOGESH AGRAWAL", "ANUSHKA SWAPNIL SAKALE", "ANUSHREE DAS", "ARYAN SUMIT SAHU",
+    "ASHWI GIRISH PANDEY", "DAKSHATA MAHESH DATILKAR", "DEVANSH BHANUSHALI", "DIPA DEBKUMAR PAUL",
+    "GANESH VISHWAKARMA", "GOPIKA TARUN", "HIMANSHU PARMAR", "ISHAN MONU KUMAR BHATTI",
+    "JANVI RAMESH HEGDE", "JYOTHIKHA M P", "MANU SHREYA SUNDARRAJ", "MIHIKA YADAV",
+    "NIDHI JAYWANT KHAIRE", "OM PANKAJ BAWNE", "PAVANRAJ REVANNATH ROTE", "PRIYA PATEL",
+    "SALONI JOGENDAR PAL", "SAPNA RAMNATH GUPTA", "SHANVI MAHINDRA JAIN", "SHARDUL NILESH MORE",
+    "SHIVRAJ BHUSHAN NAWALE", "SHREENIDHI VINOD VISHWAKARMA", "SONAM RAJESH MISHRA",
+    "TARANJEET KHULLAR", "VIHAAN"
+  ]
+};
+
+// Teacher list
 const teachersData = [
   { id: 3, name: "Akshay Kamble", image: "./akshay_kamble.jpg.jpeg", adjectives: ["Creative", "Supportive", "Dedicated", "Polite"] },
   { id: 4, name: "Amit Gupta", image: "./amit_gupta.jpg.jpeg", adjectives: ["Engaging", "Patient", "Smart", "Friendly"] },
@@ -29,6 +84,33 @@ const teachersData = [
   { id: 39, name: "VINAY KUMAR UPADHYAY", image: "./vinay_kumar_upadhyay.jpg.jpeg", adjectives: ["Energetic", "Friendly", "Supportive", "Knowledgeable"] },
   { id: 40, name: "VINOD TAPASE", image: "./vinod_tapase.jpg.jpeg", adjectives: ["Dedicated", "Kind", "Calm", "Helpful"] }
 ];
+
+// Dynamically populate student names based on selected class
+function updateStudentNames() {
+  const gradeSelect = document.getElementById('student-grade');
+  const nameSelect = document.getElementById('student-name');
+  const selectedGrade = gradeSelect.value;
+
+  nameSelect.innerHTML = '';
+
+  if (!selectedGrade || !studentsByGrade[selectedGrade]) {
+    nameSelect.innerHTML = '<option value="">-- Select Class First --</option>';
+    return;
+  }
+
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.innerText = '-- Choose Your Name --';
+  nameSelect.appendChild(defaultOption);
+
+  studentsByGrade[selectedGrade].forEach(student => {
+    const opt = document.createElement('option');
+    opt.value = student;
+    opt.innerText = student;
+    nameSelect.appendChild(opt);
+  });
+}
+
 // Render teacher cards
 function renderTeachers(teachers) {
   const grid = document.getElementById('teacher-grid');
@@ -108,28 +190,27 @@ function rateEmoji(element) {
 // Submit all teacher feedback directly to Google Sheet
 function submitAllWishes() {
   const grade = document.getElementById('student-grade').value;
-  const rollNumber = document.getElementById('student-roll').value;
+  const studentName = document.getElementById('student-name').value;
 
   if (!grade) {
     alert('Please select your Class before submitting!');
     return;
   }
-  if (!rollNumber) {
-    alert('Please select your Roll Number before submitting!');
+  if (!studentName) {
+    alert('Please select your Name before submitting!');
     return;
   }
 
   // Prevent duplicate submissions per student via local storage
-  const studentKey = `submitted_${grade}_${rollNumber}`;
+  const studentKey = `submitted_${grade}_${studentName.replace(/\s+/g, '_')}`;
   if (localStorage.getItem(studentKey)) {
-    alert(`Submission blocked! Feedback for ${grade}, Roll No. ${rollNumber} has already been submitted from this device.`);
+    alert(`Submission blocked! Feedback for ${studentName} (${grade}) has already been submitted from this device.`);
     return;
   }
 
   const cards = document.querySelectorAll('.card');
   const submissions = [];
 
-  // Strictly enforce rating and quality selection for EVERY teacher card
   for (let i = 0; i < cards.length; i++) {
     const card = cards[i];
     const teacherName = card.getAttribute('data-teacher-name');
@@ -163,7 +244,7 @@ function submitAllWishes() {
 
   const payload = {
     grade: grade,
-    rollNumber: rollNumber,
+    rollNumber: studentName, // Transmit Student Name in place of Roll Number
     submissions: submissions
   };
 
@@ -176,7 +257,7 @@ function submitAllWishes() {
   .then(() => {
     localStorage.setItem(studentKey, 'true');
 
-    alert(`Thank you! Your feedback for all ${submissions.length} teachers has been saved successfully! 🎉`);
+    alert(`Thank you, ${studentName}! Your feedback for all ${submissions.length} teachers has been saved successfully! 🎉`);
 
     // Reset inputs
     cards.forEach(card => {
@@ -187,7 +268,7 @@ function submitAllWishes() {
     });
 
     document.getElementById('student-grade').value = '';
-    document.getElementById('student-roll').value = '';
+    document.getElementById('student-name').innerHTML = '<option value="">-- Select Class First --</option>';
 
     submitBtn.disabled = false;
     submitBtn.innerText = 'Send All Appreciations 🎉';
