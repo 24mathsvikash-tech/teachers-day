@@ -177,8 +177,8 @@
   </main>
 
   <script>
-    // Paste your Google Apps Script Web App URL below:
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkUWjSI5Zvk3tHLR8gR92MKD9VB6QQkuiwqh2-OQrKKHlwvHmALQH8p1oLOuctYgFV/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkUWjSI5Zvk3tHLR8gR92MKD9VB6QQkuiwqh2-OQrKKHlwvHmALQH8p1oLOuctYgFV/exec';
+
     const teachersImages = {
       "Akshay Kamble": "./akshay_kamble.jpg.jpeg",
       "Amit Gupta": "./amit_gupta.jpg.jpeg",
@@ -212,7 +212,7 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkUWjSI5Zvk3
       const tbody = document.getElementById('leaderboard-body');
 
       if (!data || !data.teachers || Object.keys(data.teachers).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No submissions recorded yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No feedback recorded yet.</td></tr>';
         return;
       }
 
@@ -265,9 +265,24 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkUWjSI5Zvk3
       document.getElementById('total-messages').innerText = sumMessages;
     }
 
-    function fetchLeaderboard() {
+    async function fetchLeaderboard() {
+      try {
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getLeaderboard`, {
+          method: 'GET',
+          redirect: 'follow'
+        });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        renderLeaderboard(data);
+      } catch (err) {
+        console.warn('Fetch failed, trying JSONP fallback...', err);
+        loadViaJsonp();
+      }
+    }
+
+    function loadViaJsonp() {
       const script = document.createElement('script');
-      script.src = GOOGLE_SCRIPT_URL + '?callback=renderLeaderboard';
+      script.src = `${GOOGLE_SCRIPT_URL}?callback=renderLeaderboard`;
       script.onerror = function() {
         document.getElementById('leaderboard-body').innerHTML = 
           '<tr><td colspan="6" style="text-align: center; color: #ef4444; padding: 2rem;">Error connecting to Google Script. Verify your web deployment permissions.</td></tr>';
