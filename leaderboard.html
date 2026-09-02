@@ -1,172 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OM Public School - Teacher Points Leaderboard</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      background-color: #f1f5f9;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .leaderboard-header {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      color: white;
-      text-align: center;
-      padding: 2.5rem 1rem;
-    }
-    .leaderboard-container {
-      max-width: 900px;
-      margin: -2rem auto 3rem;
-      padding: 0 1rem;
-    }
-    .summary-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .stat-card {
-      background: white;
-      padding: 1.2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .stat-number {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #4f46e5;
-    }
-    .stat-label {
-      font-size: 0.9rem;
-      color: #64748b;
-      margin-top: 0.2rem;
-    }
-    .leaderboard-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    }
-    .leaderboard-table th {
-      background: #4f46e5;
-      color: white;
-      padding: 1rem;
-      text-align: left;
-      font-size: 0.95rem;
-    }
-    .leaderboard-table td {
-      padding: 1rem;
-      border-bottom: 1px solid #e2e8f0;
-      vertical-align: middle;
-    }
-    .leaderboard-table tr:hover {
-      background: #f8fafc;
-    }
-    .rank-badge {
-      font-weight: bold;
-      width: 32px;
-      height: 32px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: #e2e8f0;
-      color: #334155;
-    }
-    .rank-1 { background: #fef08a; color: #854d0e; font-size: 1.1rem; }
-    .rank-2 { background: #e2e8f0; color: #475569; font-size: 1.1rem; }
-    .rank-3 { background: #fed7aa; color: #9a3412; font-size: 1.1rem; }
-    .teacher-profile {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-    }
-    .teacher-avatar {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #e2e8f0;
-    }
-    .points-pill {
-      background: #e0e7ff;
-      color: #3730a3;
-      font-weight: bold;
-      padding: 0.4rem 0.8rem;
-      border-radius: 20px;
-      display: inline-block;
-    }
-    .badge-tag {
-      background: #f1f5f9;
-      color: #475569;
-      font-size: 0.75rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      margin-right: 0.2rem;
-      display: inline-block;
-      margin-bottom: 0.2rem;
-    }
-  </style>
-</head>
-<body>
-
-  <header class="leaderboard-header">
-    <div style="display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin-bottom: 0.5rem;">
-      <img src="./logo.png" alt="OM Public School Logo" style="height: 50px;">
-      <h1 style="margin: 0; color: white;">OM PUBLIC SCHOOL</h1>
-    </div>
-    <h2>🏆 Teacher Appreciation Points Leaderboard</h2>
-    <p style="color: #94a3b8; margin-top: 0.5rem;">Real-time calculation of votes, ratings, and appreciation score points</p>
-  </header>
-
-  <main class="leaderboard-container">
-    
-    <!-- Top Level Metrics -->
-    <div class="summary-cards">
-      <div class="stat-card">
-        <div class="stat-number" id="total-points">0</div>
-        <div class="stat-label">Total Points Awarded</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="total-evaluations">0</div>
-        <div class="stat-label">Total Student Evaluations</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="total-messages">0</div>
-        <div class="stat-label">Total Written Wishes</div>
-      </div>
-    </div>
-
-    <!-- Leaderboard Table -->
-    <table class="leaderboard-table">
-      <thead>
-        <tr>
-          <th style="width: 80px;">Rank</th>
-          <th>Teacher</th>
-          <th>Total Points</th>
-          <th>Avg Rating</th>
-          <th>Top Qualities</th>
-          <th>Wishes</th>
-        </tr>
-      </thead>
-      <tbody id="leaderboard-body">
-        <tr>
-          <td colspan="6" style="text-align: center; padding: 2rem;">Loading leaderboard data... ⏳</td>
-        </tr>
-      </tbody>
-    </table>
-
-  </main>
-
-  <script>
-   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw159sXtUMGyvCQCl1QprOyrgxUeBg58NLLBttAIkIjbROmVNaoAC5_Y3b-iLrS6bhwmA/exec';
+<script>
+    const GOOGLE_SCRIPT_URL = 'YOUR_NEW_DEPLOYMENT_URL_HERE';
 
     const teachersImages = {
       "Akshay Kamble": "./akshay_kamble.jpg.jpeg",
@@ -197,75 +30,74 @@
       "VINOD TAPASE": "./vinod_tapase.jpg.jpeg"
     };
 
-    async function fetchLeaderboard() {
-      try {
-        const response = await fetch(GOOGLE_SCRIPT_URL);
-        const data = await response.json();
-        const tbody = document.getElementById('leaderboard-body');
+    // Callback handler for JSONP
+    function renderLeaderboard(data) {
+      const tbody = document.getElementById('leaderboard-body');
 
-        if (!data.teachers || Object.keys(data.teachers).length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No feedback recorded yet.</td></tr>';
-          return;
-        }
+      if (!data.teachers || Object.keys(data.teachers).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No feedback recorded yet.</td></tr>';
+        return;
+      }
 
-        // Convert object to array and sort by total points (descending)
-        const sortedTeachers = Object.values(data.teachers).sort((a, b) => b.totalPoints - a.totalPoints);
+      const sortedTeachers = Object.values(data.teachers).sort((a, b) => b.totalPoints - a.totalPoints);
 
-        let sumPoints = 0;
-        let sumVotes = 0;
-        let sumMessages = 0;
+      let sumPoints = 0;
+      let sumVotes = 0;
+      let sumMessages = 0;
 
-        tbody.innerHTML = '';
+      tbody.innerHTML = '';
 
-        sortedTeachers.forEach((t, index) => {
-          sumPoints += t.totalPoints;
-          sumVotes += t.totalVotes;
-          sumMessages += t.messages.length;
+      sortedTeachers.forEach((t, index) => {
+        sumPoints += t.totalPoints;
+        sumVotes += t.totalVotes;
+        sumMessages += t.messages ? t.messages.length : 0;
 
-          const rank = index + 1;
-          let rankClass = 'rank-badge';
-          if (rank === 1) rankClass += ' rank-1';
-          else if (rank === 2) rankClass += ' rank-2';
-          else if (rank === 3) rankClass += ' rank-3';
+        const rank = index + 1;
+        let rankClass = 'rank-badge';
+        if (rank === 1) rankClass += ' rank-1';
+        else if (rank === 2) rankClass += ' rank-2';
+        else if (rank === 3) rankClass += ' rank-3';
 
-          const topTags = t.topQualities.slice(0, 3)
-            .map(q => `<span class="badge-tag">${q}</span>`)
-            .join('') || '<span style="color:#94a3b8; font-size:0.8rem;">None</span>';
+        const topTags = t.topQualities && t.topQualities.length > 0
+          ? t.topQualities.slice(0, 3).map(q => `<span class="badge-tag">${q}</span>`).join('')
+          : '<span style="color:#94a3b8; font-size:0.8rem;">None</span>';
 
-          const imgSrc = teachersImages[t.teacherName] || 'https://via.placeholder.com/45?text=Teacher';
+        const imgSrc = teachersImages[t.teacherName] || 'https://via.placeholder.com/45?text=Teacher';
 
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td><span class="${rankClass}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</span></td>
-            <td>
-              <div class="teacher-profile">
-                <img src="${imgSrc}" class="teacher-avatar" alt="${t.teacherName}" onerror="this.src='https://via.placeholder.com/45?text=Teacher'">
-                <div>
-                  <strong style="color: #1e293b; font-size: 0.95rem;">${t.teacherName}</strong>
-                </div>
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><span class="${rankClass}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</span></td>
+          <td>
+            <div class="teacher-profile">
+              <img src="${imgSrc}" class="teacher-avatar" alt="${t.teacherName}" onerror="this.src='https://via.placeholder.com/45?text=Teacher'">
+              <div>
+                <strong style="color: #1e293b; font-size: 0.95rem;">${t.teacherName}</strong>
               </div>
-            </td>
-            <td><span class="points-pill">${t.totalPoints} Pts</span></td>
-            <td>⭐ <strong>${t.avgRating}</strong> / 5.0</td>
-            <td>${topTags}</td>
-            <td>💬 ${t.messages.length}</td>
-          `;
-          tbody.appendChild(row);
-        });
+            </div>
+          </td>
+          <td><span class="points-pill">${t.totalPoints} Pts</span></td>
+          <td>⭐ <strong>${t.avgRating}</strong> / 5.0</td>
+          <td>${topTags}</td>
+          <td>💬 ${t.messages ? t.messages.length : 0}</td>
+        `;
+        tbody.appendChild(row);
+      });
 
-        // Update top summary cards
-        document.getElementById('total-points').innerText = sumPoints;
-        document.getElementById('total-evaluations').innerText = sumVotes;
-        document.getElementById('total-messages').innerText = sumMessages;
+      document.getElementById('total-points').innerText = sumPoints;
+      document.getElementById('total-evaluations').innerText = sumVotes;
+      document.getElementById('total-messages').innerText = sumMessages;
+    }
 
-      } catch (err) {
-        console.error(err);
+    // Fetch using JSONP script tag insertion
+    function fetchLeaderboard() {
+      const script = document.createElement('script');
+      script.src = `${GOOGLE_SCRIPT_URL}?callback=renderLeaderboard`;
+      script.onerror = function() {
         document.getElementById('leaderboard-body').innerHTML = 
           '<tr><td colspan="6" style="text-align: center; color: red; padding: 2rem;">Error loading points data. Please check your web app deployment.</td></tr>';
-      }
+      };
+      document.body.appendChild(script);
     }
 
     document.addEventListener('DOMContentLoaded', fetchLeaderboard);
   </script>
-</body>
-</html>
