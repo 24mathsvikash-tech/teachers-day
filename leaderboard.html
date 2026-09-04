@@ -662,7 +662,7 @@
       });
     }
 
-    // Opens Modal showing face impression emoji counts for a teacher
+    // Opens Modal showing face impression emoji counts for a teacher with automatic fallback summary
     function openEmojiModal(encodedName) {
       const teacherName = decodeURIComponent(encodedName);
       const teacherData = leaderboardCache[teacherName] || {};
@@ -674,7 +674,7 @@
       title.innerText = `Impression Emoji Counts: ${teacherName}`;
       content.innerHTML = '';
 
-      // Fallback object search across potential JSON keys from Google Apps Script
+      // 1. Check all potential property names from Google Apps Script JSON
       let countsMap = teacherData.ratingCounts || 
                         teacherData.ratings || 
                         teacherData.emojiCounts || 
@@ -682,20 +682,21 @@
                         teacherData.ratingsMap || 
                         {};
 
-      // If countsMap is empty, try calculating from raw ratings array/messages if available
+      // 2. If object is empty, aggregate ratings from list array or messages
       if (Object.keys(countsMap).length === 0) {
-        const ratingsArray = teacherData.ratingsList || teacherData.ratingList || [];
-        if (Array.isArray(ratingsArray) && ratingsArray.length > 0) {
-          ratingsArray.forEach(r => {
-            const val = parseInt(r, 10);
+        const rawList = teacherData.ratingsList || teacherData.ratingList || teacherData.allRatings || [];
+        if (Array.isArray(rawList) && rawList.length > 0) {
+          rawList.forEach(r => {
+            const val = Math.round(parseFloat(r));
             if (val >= 1 && val <= 5) {
               countsMap[val] = (countsMap[val] || 0) + 1;
             }
           });
         } else if (teacherData.messages && Array.isArray(teacherData.messages)) {
           teacherData.messages.forEach(msg => {
-            if (msg.rating || msg.impression || msg.score) {
-              const val = parseInt(msg.rating || msg.impression || msg.score, 10);
+            const score = msg.rating || msg.impression || msg.score || msg.points;
+            if (score) {
+              const val = Math.round(parseFloat(score));
               if (val >= 1 && val <= 5) {
                 countsMap[val] = (countsMap[val] || 0) + 1;
               }
@@ -704,38 +705,49 @@
         }
       }
 
-      let totalRecorded = 0;
+      // 3. Fallback check: count total recorded items
+      let totalCount = 0;
+      impressionFaceEmojis.forEach(item => {
+        totalCount += (countsMap[item.key] || countsMap[item.key.toString()] || 0);
+      });
+
       const grid = document.createElement('div');
       grid.className = 'emoji-grid';
       grid.style.flexDirection = 'column';
       grid.style.alignItems = 'stretch';
 
-      impressionFaceEmojis.forEach(item => {
-        const count = countsMap[item.key] || countsMap[item.key.toString()] || 0;
-        totalRecorded += count;
-
-        const pill = document.createElement('div');
-        pill.className = 'emoji-pill';
-        pill.style.padding = '0.8rem 1.2rem';
-        pill.style.fontSize = '1.1rem';
-        pill.style.display = 'flex';
-        pill.style.justifyContent = 'space-between';
-        pill.style.alignItems = 'center';
-        
-        pill.innerHTML = `
-          <div style="display:flex; align-items:center; gap:0.6rem;">
-            <span style="font-size: 1.5rem;">${item.emoji}</span>
-            <span style="font-size: 0.95rem; color: #334155;">${item.label}</span>
-          </div>
-          <span class="emoji-pill-count" style="font-size:0.95rem; font-weight:bold;">${count} times</span>
-        `;
-        grid.appendChild(pill);
-      });
-
-      if (totalRecorded === 0 && Object.keys(countsMap).length === 0) {
-        content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1.5rem;">No rating emoji counts recorded for this teacher yet.</p>';
-      } else {
+      if (totalCount > 0) {
+        impressionFaceEmojis.forEach(item => {
+          const count = countsMap[item.key] || countsMap[item.key.toString()] || 0;
+          const pill = document.createElement('div');
+          pill.className = 'emoji-pill';
+          pill.style.padding = '0.8rem 1.2rem';
+          pill.style.fontSize = '1.1rem';
+          pill.style.display = 'flex';
+          pill.style.justifyContent = 'space-between';
+          pill.style.alignItems = 'center';
+          
+          pill.innerHTML = `
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span style="font-size: 1.5rem;">${item.emoji}</span>
+              <span style="font-size: 0.95rem; color: #334155;">${item.label}</span>
+            </div>
+            <span class="emoji-pill-count" style="font-size:0.95rem; font-weight:bold;">${count} times</span>
+          `;
+          grid.appendChild(pill);
+        });
         content.appendChild(grid);
+      } else {
+        // Render aggregate visual card if explicit counts aren't passed by backend
+        content.innerHTML = `
+          <div style="text-align: center; padding: 1.5rem;">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">😊</div>
+            <h4 style="font-size: 1.2rem; color: #1e293b; margin-bottom: 0.4rem;">Average Impression: ${teacherData.avgRating || '0.0'} / 5.0</h4>
+            <p style="color: #64748b; font-size: 0.88rem;">
+              Individual emoji breakdown counts are not stored separately in your Google Sheet backend for this teacher.
+            </p>
+          </div>
+        `;
       }
 
       modal.style.display = 'flex';
