@@ -59,6 +59,47 @@
       margin-top: 0.2rem;
     }
 
+    /* Emoji Tracker Box */
+    .emoji-summary-card {
+      background: white;
+      padding: 1.2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+    }
+    .emoji-summary-title {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #1e293b;
+      margin-bottom: 0.8rem;
+      text-align: center;
+    }
+    .emoji-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.8rem;
+    }
+    .emoji-pill {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .emoji-pill-count {
+      background: #e0e7ff;
+      color: #4f46e5;
+      padding: 0.1rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
     /* Tracker Card */
     .tracker-card {
       background: white;
@@ -335,7 +376,13 @@
       </div>
     </div>
 
-    <!-- Class Wise Tracker Section -->
+    <div class="emoji-summary-card">
+      <div class="emoji-summary-title">⭐ Total Emoji & Quality Badges Awarded</div>
+      <div class="emoji-grid" id="emoji-grid">
+        <div style="color: #64748b; font-size: 0.85rem;">Loading emoji counts...</div>
+      </div>
+    </div>
+
     <div class="tracker-card">
       <div class="tracker-header">
         <div class="tracker-title">📊 Class-Wise Submission Status</div>
@@ -365,7 +412,6 @@
       </div>
     </div>
 
-    <!-- Leaderboard Table -->
     <div class="table-responsive">
       <table class="leaderboard-table">
         <thead>
@@ -387,7 +433,6 @@
     </div>
   </main>
 
-  <!-- Wishes Modal -->
   <div class="modal-overlay" id="messages-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -398,7 +443,6 @@
     </div>
   </div>
 
-  <!-- Class Roster Config Modal -->
   <div class="modal-overlay" id="roster-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -409,11 +453,10 @@
         <p style="font-size: 0.85rem; color: #64748b;">
           Paste your student roster format below (Class, Name):<br>
           <em>Example:</em><br>
-          Class 8A, Rahul Sharma<br>
-          Class 8A, Priya Patel<br>
-          Class 10B, Amit Kumar
+          Grade 6, AARADHYA RAHUL PAWAR<br>
+          Grade 6, AAROHI GANESH PATIL
         </p>
-        <textarea id="roster-input" placeholder="Class 8A, Rahul Sharma&#10;Class 8A, Priya Patel"></textarea>
+        <textarea id="roster-input" placeholder="Grade 6, AARADHYA RAHUL PAWAR&#10;Grade 6, AAROHI GANESH PATIL"></textarea>
         <button class="action-btn" onclick="saveRoster()">Save Roster Data</button>
       </div>
     </div>
@@ -471,6 +514,7 @@
       let sumPoints = 0;
       let sumMessages = 0;
       const uniqueStudentSet = new Set();
+      const globalEmojiCounts = {};
 
       tbody.innerHTML = '';
 
@@ -478,6 +522,15 @@
         sumPoints += t.totalPoints || 0;
         const msgCount = t.messages ? t.messages.length : 0;
         sumMessages += msgCount;
+
+        // Count overall emojis / qualities across teachers
+        if (t.topQualities && Array.isArray(t.topQualities)) {
+          t.topQualities.forEach(q => {
+            if (q) {
+              globalEmojiCounts[q] = (globalEmojiCounts[q] || 0) + (t.qualitiesMap ? (t.qualitiesMap[q] || 1) : 1);
+            }
+          });
+        }
 
         if (t.messages && Array.isArray(t.messages)) {
           t.messages.forEach(msg => {
@@ -536,7 +589,27 @@
       document.getElementById('total-evaluations').innerText = data.totalStudents || uniqueStudentSet.size;
       document.getElementById('total-messages').innerText = sumMessages;
 
+      renderEmojiSummary(globalEmojiCounts);
       populateClassDropdown();
+    }
+
+    function renderEmojiSummary(emojiCounts) {
+      const container = document.getElementById('emoji-grid');
+      container.innerHTML = '';
+
+      const items = Object.entries(emojiCounts).sort((a, b) => b[1] - a[1]);
+
+      if (items.length === 0) {
+        container.innerHTML = '<div style="color: #64748b; font-size: 0.85rem;">No badges or emojis recorded yet.</div>';
+        return;
+      }
+
+      items.forEach(([item, count]) => {
+        const pill = document.createElement('div');
+        pill.className = 'emoji-pill';
+        pill.innerHTML = `<span>${item}</span><span class="emoji-pill-count">${count}</span>`;
+        container.appendChild(pill);
+      });
     }
 
     function populateClassDropdown() {
@@ -593,7 +666,6 @@
         });
       }
 
-      // Pending List computation
       const lowerSubmitted = new Set(Array.from(submittedSet).map(n => n.toLowerCase()));
       const pendingArray = rosterList.filter(name => !lowerSubmitted.has(name.toLowerCase()));
 
