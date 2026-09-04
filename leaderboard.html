@@ -249,6 +249,28 @@
       border-radius: 20px;
       display: inline-block;
     }
+    
+    /* Clickable Rating Badge */
+    .rating-badge-btn {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #fef08a;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all 0.2s ease;
+    }
+    .rating-badge-btn:hover {
+      background: #fef08a;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
     .badge-tag {
       background: #f1f5f9;
       color: #475569;
@@ -376,6 +398,7 @@
       </div>
     </div>
 
+    <!-- Overall Emoji Summary Card -->
     <div class="emoji-summary-card">
       <div class="emoji-summary-title">⭐ Total Emoji & Quality Badges Awarded</div>
       <div class="emoji-grid" id="emoji-grid">
@@ -383,6 +406,7 @@
       </div>
     </div>
 
+    <!-- Class-Wise Submission Status Tracker -->
     <div class="tracker-card">
       <div class="tracker-header">
         <div class="tracker-title">📊 Class-Wise Submission Status</div>
@@ -412,6 +436,7 @@
       </div>
     </div>
 
+    <!-- Leaderboard Table -->
     <div class="table-responsive">
       <table class="leaderboard-table">
         <thead>
@@ -433,6 +458,18 @@
     </div>
   </main>
 
+  <!-- Teacher Emoji Detail Modal -->
+  <div class="modal-overlay" id="emoji-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-emoji-teacher-name">Emoji Breakdown</h3>
+        <button class="close-btn" onclick="closeModal('emoji-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-emoji-body-content"></div>
+    </div>
+  </div>
+
+  <!-- Wishes Modal -->
   <div class="modal-overlay" id="messages-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -443,6 +480,7 @@
     </div>
   </div>
 
+  <!-- Class Roster Config Modal -->
   <div class="modal-overlay" id="roster-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -523,11 +561,11 @@
         const msgCount = t.messages ? t.messages.length : 0;
         sumMessages += msgCount;
 
-        // Count overall emojis / qualities across teachers
         if (t.topQualities && Array.isArray(t.topQualities)) {
           t.topQualities.forEach(q => {
             if (q) {
-              globalEmojiCounts[q] = (globalEmojiCounts[q] || 0) + (t.qualitiesMap ? (t.qualitiesMap[q] || 1) : 1);
+              const count = (t.qualitiesMap && t.qualitiesMap[q]) ? t.qualitiesMap[q] : 1;
+              globalEmojiCounts[q] = (globalEmojiCounts[q] || 0) + count;
             }
           });
         }
@@ -574,7 +612,11 @@
             </div>
           </td>
           <td><span class="points-pill">${t.totalPoints || 0} Pts</span></td>
-          <td>⭐ <strong>${t.avgRating || '0.0'}</strong> / 5.0</td>
+          <td>
+            <button class="rating-badge-btn" onclick="openEmojiModal('${encodedName}')" title="Click to view emoji counts">
+              ⭐ ${t.avgRating || '0.0'} / 5.0
+            </button>
+          </td>
           <td>${topTags}</td>
           <td>
             <button class="message-btn" onclick="openMessages('${encodedName}')">
@@ -610,6 +652,47 @@
         pill.innerHTML = `<span>${item}</span><span class="emoji-pill-count">${count}</span>`;
         container.appendChild(pill);
       });
+    }
+
+    function openEmojiModal(encodedName) {
+      const teacherName = decodeURIComponent(encodedName);
+      const teacherData = leaderboardCache[teacherName];
+
+      const modal = document.getElementById('emoji-modal');
+      const title = document.getElementById('modal-emoji-teacher-name');
+      const content = document.getElementById('modal-emoji-body-content');
+
+      title.innerText = `⭐ Emoji & Badges Received: ${teacherName}`;
+      content.innerHTML = '';
+
+      if (!teacherData || (!teacherData.qualitiesMap && (!teacherData.topQualities || teacherData.topQualities.length === 0))) {
+        content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No emoji badges recorded for this teacher yet.</p>';
+      } else {
+        const grid = document.createElement('div');
+        grid.className = 'emoji-grid';
+
+        const map = teacherData.qualitiesMap || {};
+        let items = Object.entries(map);
+
+        if (items.length === 0 && teacherData.topQualities) {
+          items = teacherData.topQualities.map(q => [q, 1]);
+        }
+
+        items.sort((a, b) => b[1] - a[1]);
+
+        items.forEach(([emojiText, count]) => {
+          const pill = document.createElement('div');
+          pill.className = 'emoji-pill';
+          pill.style.padding = '0.6rem 1rem';
+          pill.style.fontSize = '0.95rem';
+          pill.innerHTML = `<span>${emojiText}</span><span class="emoji-pill-count" style="font-size:0.9rem;">${count}</span>`;
+          grid.appendChild(pill);
+        });
+
+        content.appendChild(grid);
+      }
+
+      modal.style.display = 'flex';
     }
 
     function populateClassDropdown() {
