@@ -315,6 +315,7 @@
 
       let sumPoints = 0;
       let sumMessages = 0;
+      const uniqueStudentSet = new Set();
 
       tbody.innerHTML = '';
 
@@ -322,6 +323,16 @@
         sumPoints += t.totalPoints || 0;
         const msgCount = t.messages ? t.messages.length : 0;
         sumMessages += msgCount;
+
+        // Collect unique students across all teacher submissions
+        if (t.messages && Array.isArray(t.messages)) {
+          t.messages.forEach(msg => {
+            if (msg.studentName && msg.studentName.trim() !== "") {
+              const studentIdentifier = `${msg.studentName.trim().toLowerCase()}_${(msg.grade || '').trim().toLowerCase()}`;
+              uniqueStudentSet.add(studentIdentifier);
+            }
+          });
+        }
 
         const rank = index + 1;
         let rankClass = 'rank-badge';
@@ -359,9 +370,11 @@
         tbody.appendChild(row);
       });
 
+      // Calculate unique student count (use backend value if provided, else rely on client-side set count)
+      const uniqueCount = data.totalStudents || uniqueStudentSet.size;
+
       document.getElementById('total-points').innerText = sumPoints;
-      // Displays totalUniqueStudents provided from backend, fallback to 0
-      document.getElementById('total-evaluations').innerText = data.totalStudents || 0;
+      document.getElementById('total-evaluations').innerText = uniqueCount;
       document.getElementById('total-messages').innerText = sumMessages;
     }
 
