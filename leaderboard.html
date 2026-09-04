@@ -127,6 +127,84 @@
       display: inline-block;
       margin-bottom: 0.2rem;
     }
+    .message-btn {
+      background: #e0e7ff;
+      color: #4f46e5;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .message-btn:hover {
+      background: #c7d2fe;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 550px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    .modal-header {
+      padding: 1.2rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 1.1rem;
+      color: #1e293b;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+    .modal-body {
+      padding: 1.2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .comment-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+    }
+    .comment-meta {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4f46e5;
+      margin-bottom: 0.3rem;
+    }
+    .comment-text {
+      font-size: 0.9rem;
+      color: #334155;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -176,8 +254,23 @@
     </div>
   </main>
 
+  <!-- Modal for Student Messages -->
+  <div class="modal-overlay" id="messages-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-teacher-name">Student Wishes</h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body-content">
+        <!-- Messages will be injected here -->
+      </div>
+    </div>
+  </div>
+
   <script>
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkUWjSI5Zvk3tHLR8gR92MKD9VB6QQkuiwqh2-OQrKKHlwvHmALQH8p1oLOuctYgFV/exec';
+
+    let leaderboardCache = {};
 
     const teachersImages = {
       "Akshay Kamble": "./akshay_kamble.jpg.jpeg",
@@ -216,6 +309,8 @@
         return;
       }
 
+      leaderboardCache = data.teachers;
+
       const sortedTeachers = Object.values(data.teachers).sort((a, b) => b.totalPoints - a.totalPoints);
 
       let sumPoints = 0;
@@ -227,7 +322,8 @@
       sortedTeachers.forEach((t, index) => {
         sumPoints += t.totalPoints || 0;
         sumVotes += t.totalVotes || 0;
-        sumMessages += t.messages ? t.messages.length : 0;
+        const msgCount = t.messages ? t.messages.length : 0;
+        sumMessages += msgCount;
 
         const rank = index + 1;
         let rankClass = 'rank-badge';
@@ -240,6 +336,8 @@
           : '<span style="color:#94a3b8; font-size:0.8rem;">None</span>';
 
         const imgSrc = teachersImages[t.teacherName] || 'https://via.placeholder.com/45?text=Teacher';
+
+        const encodedName = encodeURIComponent(t.teacherName);
 
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -255,7 +353,11 @@
           <td><span class="points-pill">${t.totalPoints || 0} Pts</span></td>
           <td>⭐ <strong>${t.avgRating || '0.0'}</strong> / 5.0</td>
           <td>${topTags}</td>
-          <td>💬 ${t.messages ? t.messages.length : 0}</td>
+          <td>
+            <button class="message-btn" onclick="openMessages('${encodedName}')">
+              💬 ${msgCount} ${msgCount === 1 ? 'Wish' : 'Wishes'}
+            </button>
+          </td>
         `;
         tbody.appendChild(row);
       });
@@ -264,6 +366,50 @@
       document.getElementById('total-evaluations').innerText = sumVotes;
       document.getElementById('total-messages').innerText = sumMessages;
     }
+
+    function openMessages(encodedName) {
+      const teacherName = decodeURIComponent(encodedName);
+      const teacherData = leaderboardCache[teacherName];
+      
+      const modal = document.getElementById('messages-modal');
+      const title = document.getElementById('modal-teacher-name');
+      const content = document.getElementById('modal-body-content');
+
+      title.innerText = `Wishes for ${teacherName}`;
+      content.innerHTML = '';
+
+      if (!teacherData || !teacherData.messages || teacherData.messages.length === 0) {
+        content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No student comments submitted yet.</p>';
+      } else {
+        teacherData.messages.forEach(msg => {
+          const card = document.createElement('div');
+          card.className = 'comment-card';
+          
+          const studentInfo = (msg.studentName || msg.grade) 
+            ? `${msg.studentName || 'Anonymous'} ${msg.grade ? '(' + msg.grade + ')' : ''}`
+            : 'Student';
+
+          card.innerHTML = `
+            <div class="comment-meta">👤 ${studentInfo}</div>
+            <div class="comment-text">"${msg.text}"</div>
+          `;
+          content.appendChild(card);
+        });
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('messages-modal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('messages-modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
 
     async function fetchLeaderboard() {
       try {
