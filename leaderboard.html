@@ -506,13 +506,13 @@
     let submittedStudentsByClass = {}; 
     let masterClassRoster = JSON.parse(localStorage.getItem('masterClassRoster') || '{}');
 
-    // Emoji mapping according to 1 to 5 position scale
+    // Sequential 1-5 mapping left-to-right matching the form options
     const impressionFaceEmojis = [
-      { key: 5, emoji: "😍", label: "5 Points - Heart Eyes" },
-      { key: 4, emoji: "😊", label: "4 Points - Happy" },
-      { key: 3, emoji: "😐", label: "3 Points - Neutral" },
+      { key: 1, emoji: "😡", label: "1 Point - Angry" },
       { key: 2, emoji: "🙁", label: "2 Points - Sad" },
-      { key: 1, emoji: "😡", label: "1 Point - Angry" }
+      { key: 3, emoji: "😐", label: "3 Points - Neutral" },
+      { key: 4, emoji: "😊", label: "4 Points - Happy" },
+      { key: 5, emoji: "😍", label: "5 Points - Heart Eyes" }
     ];
 
     const teachersImages = {
@@ -674,20 +674,45 @@
       title.innerText = `Impression Emoji Counts: ${teacherName}`;
       content.innerHTML = '';
 
-      // Check both ratingCounts and ratings Map structures
-      const counts = teacherData.ratingCounts || teacherData.ratings || {};
+      // Fallback object search across potential JSON keys from Google Apps Script
+      let countsMap = teacherData.ratingCounts || 
+                        teacherData.ratings || 
+                        teacherData.emojiCounts || 
+                        teacherData.impressionCounts || 
+                        teacherData.ratingsMap || 
+                        {};
 
-      let hasCounts = false;
+      // If countsMap is empty, try calculating from raw ratings array/messages if available
+      if (Object.keys(countsMap).length === 0) {
+        const ratingsArray = teacherData.ratingsList || teacherData.ratingList || [];
+        if (Array.isArray(ratingsArray) && ratingsArray.length > 0) {
+          ratingsArray.forEach(r => {
+            const val = parseInt(r, 10);
+            if (val >= 1 && val <= 5) {
+              countsMap[val] = (countsMap[val] || 0) + 1;
+            }
+          });
+        } else if (teacherData.messages && Array.isArray(teacherData.messages)) {
+          teacherData.messages.forEach(msg => {
+            if (msg.rating || msg.impression || msg.score) {
+              const val = parseInt(msg.rating || msg.impression || msg.score, 10);
+              if (val >= 1 && val <= 5) {
+                countsMap[val] = (countsMap[val] || 0) + 1;
+              }
+            }
+          });
+        }
+      }
 
+      let totalRecorded = 0;
       const grid = document.createElement('div');
       grid.className = 'emoji-grid';
       grid.style.flexDirection = 'column';
       grid.style.alignItems = 'stretch';
 
       impressionFaceEmojis.forEach(item => {
-        // Fallback to check numerical string or integer key
-        const count = counts[item.key] || counts[item.key.toString()] || 0;
-        if (count > 0) hasCounts = true;
+        const count = countsMap[item.key] || countsMap[item.key.toString()] || 0;
+        totalRecorded += count;
 
         const pill = document.createElement('div');
         pill.className = 'emoji-pill';
@@ -707,7 +732,7 @@
         grid.appendChild(pill);
       });
 
-      if (!hasCounts && (!counts || Object.keys(counts).length === 0)) {
+      if (totalRecorded === 0 && Object.keys(countsMap).length === 0) {
         content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1.5rem;">No rating emoji counts recorded for this teacher yet.</p>';
       } else {
         content.appendChild(grid);
