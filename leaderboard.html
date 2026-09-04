@@ -31,7 +31,7 @@
       font-weight: normal;
     }
     .leaderboard-container {
-      max-width: 900px;
+      max-width: 950px;
       margin: -2.5rem auto 3rem;
       padding: 0 1rem;
     }
@@ -58,6 +58,97 @@
       color: #64748b;
       margin-top: 0.2rem;
     }
+
+    /* Tracker Card */
+    .tracker-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+    }
+    .tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+    .tracker-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #1e293b;
+    }
+    .action-btn {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .action-btn:hover {
+      background: #4338ca;
+    }
+    .tracker-select-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .class-dropdown {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #1e293b;
+      background: #f8fafc;
+      outline: none;
+    }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .status-box {
+      border-radius: 8px;
+      padding: 1rem;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    .status-box-submitted {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    .status-box-pending {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+    .status-box h4 {
+      font-size: 0.95rem;
+      margin-bottom: 0.8rem;
+    }
+    .status-box-submitted h4 { color: #166534; }
+    .status-box-pending h4 { color: #991b1b; }
+    .student-list {
+      list-style: none;
+      font-size: 0.88rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .student-list li {
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      background: white;
+    }
+    .status-box-submitted li { border-left: 3px solid #22c55e; color: #15803d; }
+    .status-box-pending li { border-left: 3px solid #ef4444; color: #b91c1c; }
+
     .table-responsive {
       overflow-x: auto;
       background: white;
@@ -140,6 +231,8 @@
     .message-btn:hover {
       background: #c7d2fe;
     }
+
+    /* Modal Styles */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -205,6 +298,15 @@
       color: #334155;
       line-height: 1.4;
     }
+    textarea {
+      width: 100%;
+      height: 120px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0.8rem;
+      font-size: 0.85rem;
+      outline: none;
+    }
   </style>
 </head>
 <body>
@@ -233,6 +335,37 @@
       </div>
     </div>
 
+    <!-- Class Wise Tracker Section -->
+    <div class="tracker-card">
+      <div class="tracker-header">
+        <div class="tracker-title">📊 Class-Wise Submission Status</div>
+        <button class="action-btn" onclick="openRosterModal()">⚙️ Add / Load Class Roster</button>
+      </div>
+
+      <div class="tracker-select-row">
+        <label style="font-weight: 600; font-size: 0.9rem;">Select Class:</label>
+        <select id="class-select" class="class-dropdown" onchange="updateClassView()">
+          <option value="">-- Choose Class --</option>
+        </select>
+      </div>
+
+      <div class="status-grid">
+        <div class="status-box status-box-submitted">
+          <h4>✅ Submitted (<span id="submitted-count">0</span>)</h4>
+          <ul class="student-list" id="submitted-list">
+            <li style="color:#64748b; background:none;">Select a class to view status.</li>
+          </ul>
+        </div>
+        <div class="status-box status-box-pending">
+          <h4>❌ Pending Submission (<span id="pending-count">0</span>)</h4>
+          <ul class="student-list" id="pending-list">
+            <li style="color:#64748b; background:none;">Select a class to view status.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard Table -->
     <div class="table-responsive">
       <table class="leaderboard-table">
         <thead>
@@ -254,15 +387,34 @@
     </div>
   </main>
 
-  <!-- Modal for Student Messages -->
+  <!-- Wishes Modal -->
   <div class="modal-overlay" id="messages-modal">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modal-teacher-name">Student Wishes</h3>
-        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <button class="close-btn" onclick="closeModal('messages-modal')">&times;</button>
       </div>
-      <div class="modal-body" id="modal-body-content">
-        <!-- Messages will be injected here -->
+      <div class="modal-body" id="modal-body-content"></div>
+    </div>
+  </div>
+
+  <!-- Class Roster Config Modal -->
+  <div class="modal-overlay" id="roster-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Paste Class Roster</h3>
+        <button class="close-btn" onclick="closeModal('roster-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: #64748b;">
+          Paste your student roster format below (Class, Name):<br>
+          <em>Example:</em><br>
+          Class 8A, Rahul Sharma<br>
+          Class 8A, Priya Patel<br>
+          Class 10B, Amit Kumar
+        </p>
+        <textarea id="roster-input" placeholder="Class 8A, Rahul Sharma&#10;Class 8A, Priya Patel"></textarea>
+        <button class="action-btn" onclick="saveRoster()">Save Roster Data</button>
       </div>
     </div>
   </div>
@@ -271,6 +423,8 @@
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkUWjSI5Zvk3tHLR8gR92MKD9VB6QQkuiwqh2-OQrKKHlwvHmALQH8p1oLOuctYgFV/exec';
 
     let leaderboardCache = {};
+    let submittedStudentsByClass = {}; 
+    let masterClassRoster = JSON.parse(localStorage.getItem('masterClassRoster') || '{}');
 
     const teachersImages = {
       "Akshay Kamble": "./akshay_kamble.jpg.jpeg",
@@ -310,6 +464,7 @@
       }
 
       leaderboardCache = data.teachers;
+      submittedStudentsByClass = {};
 
       const sortedTeachers = Object.values(data.teachers).sort((a, b) => b.totalPoints - a.totalPoints);
 
@@ -324,12 +479,19 @@
         const msgCount = t.messages ? t.messages.length : 0;
         sumMessages += msgCount;
 
-        // Collect unique students across all teacher submissions
         if (t.messages && Array.isArray(t.messages)) {
           t.messages.forEach(msg => {
             if (msg.studentName && msg.studentName.trim() !== "") {
-              const studentIdentifier = `${msg.studentName.trim().toLowerCase()}_${(msg.grade || '').trim().toLowerCase()}`;
+              const studentName = msg.studentName.trim();
+              const grade = (msg.grade || 'Unassigned').trim();
+              
+              const studentIdentifier = `${studentName.toLowerCase()}_${grade.toLowerCase()}`;
               uniqueStudentSet.add(studentIdentifier);
+
+              if (!submittedStudentsByClass[grade]) {
+                submittedStudentsByClass[grade] = new Set();
+              }
+              submittedStudentsByClass[grade].add(studentName);
             }
           });
         }
@@ -370,12 +532,111 @@
         tbody.appendChild(row);
       });
 
-      // Calculate unique student count (use backend value if provided, else rely on client-side set count)
-      const uniqueCount = data.totalStudents || uniqueStudentSet.size;
-
       document.getElementById('total-points').innerText = sumPoints;
-      document.getElementById('total-evaluations').innerText = uniqueCount;
+      document.getElementById('total-evaluations').innerText = data.totalStudents || uniqueStudentSet.size;
       document.getElementById('total-messages').innerText = sumMessages;
+
+      populateClassDropdown();
+    }
+
+    function populateClassDropdown() {
+      const select = document.getElementById('class-select');
+      const currentSelected = select.value;
+      select.innerHTML = '<option value="">-- Choose Class --</option>';
+
+      const allClasses = new Set([
+        ...Object.keys(submittedStudentsByClass),
+        ...Object.keys(masterClassRoster)
+      ]);
+
+      allClasses.forEach(cls => {
+        if (!cls) return;
+        const opt = document.createElement('option');
+        opt.value = cls;
+        opt.innerText = cls;
+        select.appendChild(opt);
+      });
+
+      if (currentSelected) select.value = currentSelected;
+      updateClassView();
+    }
+
+    function updateClassView() {
+      const cls = document.getElementById('class-select').value;
+      const subList = document.getElementById('submitted-list');
+      const pendList = document.getElementById('pending-list');
+
+      subList.innerHTML = '';
+      pendList.innerHTML = '';
+
+      if (!cls) {
+        subList.innerHTML = '<li style="color:#64748b; background:none;">Select a class to view status.</li>';
+        pendList.innerHTML = '<li style="color:#64748b; background:none;">Select a class to view status.</li>';
+        document.getElementById('submitted-count').innerText = 0;
+        document.getElementById('pending-count').innerText = 0;
+        return;
+      }
+
+      const submittedSet = submittedStudentsByClass[cls] || new Set();
+      const rosterList = masterClassRoster[cls] || [];
+
+      const submittedArray = Array.from(submittedSet);
+      document.getElementById('submitted-count').innerText = submittedArray.length;
+
+      if (submittedArray.length === 0) {
+        subList.innerHTML = '<li style="color:#64748b; background:none;">No submissions yet.</li>';
+      } else {
+        submittedArray.forEach(name => {
+          const li = document.createElement('li');
+          li.innerText = name;
+          subList.appendChild(li);
+        });
+      }
+
+      // Pending List computation
+      const lowerSubmitted = new Set(Array.from(submittedSet).map(n => n.toLowerCase()));
+      const pendingArray = rosterList.filter(name => !lowerSubmitted.has(name.toLowerCase()));
+
+      document.getElementById('pending-count').innerText = pendingArray.length;
+
+      if (rosterList.length === 0) {
+        pendList.innerHTML = '<li style="color:#64748b; background:none;">Click "Add / Load Class Roster" to track pending students.</li>';
+      } else if (pendingArray.length === 0) {
+        pendList.innerHTML = '<li style="color:#166534; background:none;">🎉 All students in this class have submitted!</li>';
+      } else {
+        pendingArray.forEach(name => {
+          const li = document.createElement('li');
+          li.innerText = name;
+          pendList.appendChild(li);
+        });
+      }
+    }
+
+    function openRosterModal() {
+      document.getElementById('roster-modal').style.display = 'flex';
+    }
+
+    function saveRoster() {
+      const text = document.getElementById('roster-input').value;
+      const lines = text.split('\n');
+      const tempRoster = {};
+
+      lines.forEach(line => {
+        const parts = line.split(',');
+        if (parts.length >= 2) {
+          const cls = parts[0].trim();
+          const name = parts[1].trim();
+          if (cls && name) {
+            if (!tempRoster[cls]) tempRoster[cls] = [];
+            tempRoster[cls].push(name);
+          }
+        }
+      });
+
+      masterClassRoster = tempRoster;
+      localStorage.setItem('masterClassRoster', JSON.stringify(masterClassRoster));
+      closeModal('roster-modal');
+      populateClassDropdown();
     }
 
     function openMessages(encodedName) {
@@ -411,14 +672,13 @@
       modal.style.display = 'flex';
     }
 
-    function closeModal() {
-      document.getElementById('messages-modal').style.display = 'none';
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
     }
 
     window.onclick = function(event) {
-      const modal = document.getElementById('messages-modal');
-      if (event.target === modal) {
-        closeModal();
+      if (event.target.classList.contains('modal-overlay')) {
+        event.target.style.display = 'none';
       }
     };
 
