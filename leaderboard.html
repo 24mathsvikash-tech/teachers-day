@@ -443,7 +443,7 @@
             <th style="width: 70px;">Rank</th>
             <th>Teacher</th>
             <th>Total Points</th>
-            <th>Avg Score</th>
+            <th>Avg Impression</th>
             <th>Top Qualities</th>
             <th>Wishes</th>
           </tr>
@@ -457,11 +457,11 @@
     </div>
   </main>
 
-  <!-- Teacher Face Emoji / Rating Breakdown Modal -->
+  <!-- Impression Face Emoji Breakdown Modal -->
   <div class="modal-overlay" id="emoji-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modal-emoji-teacher-name">Face Emoji & Rating Breakdown</h3>
+        <h3 id="modal-emoji-teacher-name">Impression Face Emoji Count</h3>
         <button class="close-btn" onclick="closeModal('emoji-modal')">&times;</button>
       </div>
       <div class="modal-body" id="modal-emoji-body-content"></div>
@@ -497,7 +497,7 @@
         <button class="action-btn" onclick="saveRoster()">Save Roster Data</button>
       </div>
     </div>
-  </main>
+  </div>
 
   <script>
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkUWjSI5Zvk3tHLR8gR92MKD9VB6QQkuiwqh2-OQrKKHlwvHmALQH8p1oLOuctYgFV/exec';
@@ -506,14 +506,14 @@
     let submittedStudentsByClass = {}; 
     let masterClassRoster = JSON.parse(localStorage.getItem('masterClassRoster') || '{}');
 
-    // Face Emojis corresponding to ratings 1 to 5
-    const faceEmojiLabels = {
-      5: "😍 Excellent (5 Stars)",
-      4: "😊 Very Good (4 Stars)",
-      3: "🙂 Good (3 Stars)",
-      2: "😐 Average (2 Stars)",
-      1: "🙁 Needs Improvement (1 Star)"
-    };
+    // Impression Face Emojis mapping options (1 to 5)
+    const impressionFaceEmojis = [
+      { key: 5, emoji: "😍", label: "Very Happy / Loved" },
+      { key: 4, emoji: "😊", label: "Happy / Pleased" },
+      { key: 3, emoji: "😐", label: "Neutral / Okay" },
+      { key: 2, emoji: "🙁", label: "Sad / Unhappy" },
+      { key: 1, emoji: "😡", label: "Angry / Upset" }
+    ];
 
     const teachersImages = {
       "Akshay Kamble": "./akshay_kamble.jpg.jpeg",
@@ -621,8 +621,8 @@
           </td>
           <td><span class="points-pill">${t.totalPoints || 0} Pts</span></td>
           <td>
-            <button class="rating-badge-btn" onclick="openEmojiModal('${encodedName}')" title="Click to view face emoji breakdown">
-              ⭐ ${t.avgRating || '0.0'} / 5.0
+            <button class="rating-badge-btn" onclick="openEmojiModal('${encodedName}')" title="Click to view impression face emojis breakdown">
+              😊 ${t.avgRating || '0.0'} / 5.0
             </button>
           </td>
           <td>${topTags}</td>
@@ -662,7 +662,7 @@
       });
     }
 
-    // Opens Modal showing face emoji breakdown for a teacher
+    // Opens Modal showing face impression emoji counts for a teacher
     function openEmojiModal(encodedName) {
       const teacherName = decodeURIComponent(encodedName);
       const teacherData = leaderboardCache[teacherName];
@@ -671,11 +671,11 @@
       const title = document.getElementById('modal-emoji-teacher-name');
       const content = document.getElementById('modal-emoji-body-content');
 
-      title.innerText = `😊 Face Emoji & Rating Count: ${teacherName}`;
+      title.innerText = `Impression Emoji Counts: ${teacherName}`;
       content.innerHTML = '';
 
       if (!teacherData || !teacherData.ratingCounts) {
-        content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No rating emoji counts recorded for this teacher yet.</p>';
+        content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No impression counts recorded for this teacher yet.</p>';
       } else {
         const grid = document.createElement('div');
         grid.className = 'emoji-grid';
@@ -684,20 +684,22 @@
 
         const counts = teacherData.ratingCounts || {};
 
-        [5, 4, 3, 2, 1].forEach(star => {
-          const count = counts[star] || counts[star.toString()] || 0;
-          const label = faceEmojiLabels[star];
+        impressionFaceEmojis.forEach(item => {
+          const count = counts[item.key] || counts[item.key.toString()] || 0;
 
           const pill = document.createElement('div');
           pill.className = 'emoji-pill';
-          pill.style.justifySpaceBetween = 'space-between';
           pill.style.padding = '0.8rem 1.2rem';
-          pill.style.fontSize = '1rem';
+          pill.style.fontSize = '1.1rem';
           pill.style.display = 'flex';
           pill.style.justifyContent = 'space-between';
+          pill.style.alignItems = 'center';
           
           pill.innerHTML = `
-            <span>${label}</span>
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span style="font-size: 1.5rem;">${item.emoji}</span>
+              <span style="font-size: 0.95rem; color: #334155;">${item.label}</span>
+            </div>
             <span class="emoji-pill-count" style="font-size:0.95rem; font-weight:bold;">${count} times</span>
           `;
           grid.appendChild(pill);
