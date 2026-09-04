@@ -225,7 +225,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-number" id="total-evaluations">0</div>
-        <div class="stat-label">Total Student Evaluations</div>
+        <div class="stat-label">Total Unique Students</div>
       </div>
       <div class="stat-card">
         <div class="stat-number" id="total-messages">0</div>
@@ -314,14 +314,12 @@
       const sortedTeachers = Object.values(data.teachers).sort((a, b) => b.totalPoints - a.totalPoints);
 
       let sumPoints = 0;
-      let sumVotes = 0;
       let sumMessages = 0;
 
       tbody.innerHTML = '';
 
       sortedTeachers.forEach((t, index) => {
         sumPoints += t.totalPoints || 0;
-        sumVotes += t.totalVotes || 0;
         const msgCount = t.messages ? t.messages.length : 0;
         sumMessages += msgCount;
 
@@ -336,7 +334,6 @@
           : '<span style="color:#94a3b8; font-size:0.8rem;">None</span>';
 
         const imgSrc = teachersImages[t.teacherName] || 'https://via.placeholder.com/45?text=Teacher';
-
         const encodedName = encodeURIComponent(t.teacherName);
 
         const row = document.createElement('tr');
@@ -363,7 +360,8 @@
       });
 
       document.getElementById('total-points').innerText = sumPoints;
-      document.getElementById('total-evaluations').innerText = sumVotes;
+      // Displays totalUniqueStudents provided from backend, fallback to 0
+      document.getElementById('total-evaluations').innerText = data.totalStudents || 0;
       document.getElementById('total-messages').innerText = sumMessages;
     }
 
