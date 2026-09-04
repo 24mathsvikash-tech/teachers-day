@@ -506,13 +506,13 @@
     let submittedStudentsByClass = {}; 
     let masterClassRoster = JSON.parse(localStorage.getItem('masterClassRoster') || '{}');
 
-    // Impression Face Emojis mapping options (1 to 5)
+    // Emoji mapping according to 1 to 5 position scale
     const impressionFaceEmojis = [
-      { key: 5, emoji: "😍", label: "Very Happy / Loved" },
-      { key: 4, emoji: "😊", label: "Happy / Pleased" },
-      { key: 3, emoji: "😐", label: "Neutral / Okay" },
-      { key: 2, emoji: "🙁", label: "Sad / Unhappy" },
-      { key: 1, emoji: "😡", label: "Angry / Upset" }
+      { key: 5, emoji: "😍", label: "5 Points - Heart Eyes" },
+      { key: 4, emoji: "😊", label: "4 Points - Happy" },
+      { key: 3, emoji: "😐", label: "3 Points - Neutral" },
+      { key: 2, emoji: "🙁", label: "2 Points - Sad" },
+      { key: 1, emoji: "😡", label: "1 Point - Angry" }
     ];
 
     const teachersImages = {
@@ -665,7 +665,7 @@
     // Opens Modal showing face impression emoji counts for a teacher
     function openEmojiModal(encodedName) {
       const teacherName = decodeURIComponent(encodedName);
-      const teacherData = leaderboardCache[teacherName];
+      const teacherData = leaderboardCache[teacherName] || {};
 
       const modal = document.getElementById('emoji-modal');
       const title = document.getElementById('modal-emoji-teacher-name');
@@ -674,37 +674,42 @@
       title.innerText = `Impression Emoji Counts: ${teacherName}`;
       content.innerHTML = '';
 
-      if (!teacherData || !teacherData.ratingCounts) {
-        content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No impression counts recorded for this teacher yet.</p>';
+      // Check both ratingCounts and ratings Map structures
+      const counts = teacherData.ratingCounts || teacherData.ratings || {};
+
+      let hasCounts = false;
+
+      const grid = document.createElement('div');
+      grid.className = 'emoji-grid';
+      grid.style.flexDirection = 'column';
+      grid.style.alignItems = 'stretch';
+
+      impressionFaceEmojis.forEach(item => {
+        // Fallback to check numerical string or integer key
+        const count = counts[item.key] || counts[item.key.toString()] || 0;
+        if (count > 0) hasCounts = true;
+
+        const pill = document.createElement('div');
+        pill.className = 'emoji-pill';
+        pill.style.padding = '0.8rem 1.2rem';
+        pill.style.fontSize = '1.1rem';
+        pill.style.display = 'flex';
+        pill.style.justifyContent = 'space-between';
+        pill.style.alignItems = 'center';
+        
+        pill.innerHTML = `
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="font-size: 1.5rem;">${item.emoji}</span>
+            <span style="font-size: 0.95rem; color: #334155;">${item.label}</span>
+          </div>
+          <span class="emoji-pill-count" style="font-size:0.95rem; font-weight:bold;">${count} times</span>
+        `;
+        grid.appendChild(pill);
+      });
+
+      if (!hasCounts && (!counts || Object.keys(counts).length === 0)) {
+        content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1.5rem;">No rating emoji counts recorded for this teacher yet.</p>';
       } else {
-        const grid = document.createElement('div');
-        grid.className = 'emoji-grid';
-        grid.style.flexDirection = 'column';
-        grid.style.alignItems = 'stretch';
-
-        const counts = teacherData.ratingCounts || {};
-
-        impressionFaceEmojis.forEach(item => {
-          const count = counts[item.key] || counts[item.key.toString()] || 0;
-
-          const pill = document.createElement('div');
-          pill.className = 'emoji-pill';
-          pill.style.padding = '0.8rem 1.2rem';
-          pill.style.fontSize = '1.1rem';
-          pill.style.display = 'flex';
-          pill.style.justifyContent = 'space-between';
-          pill.style.alignItems = 'center';
-          
-          pill.innerHTML = `
-            <div style="display:flex; align-items:center; gap:0.6rem;">
-              <span style="font-size: 1.5rem;">${item.emoji}</span>
-              <span style="font-size: 0.95rem; color: #334155;">${item.label}</span>
-            </div>
-            <span class="emoji-pill-count" style="font-size:0.95rem; font-weight:bold;">${count} times</span>
-          `;
-          grid.appendChild(pill);
-        });
-
         content.appendChild(grid);
       }
 
