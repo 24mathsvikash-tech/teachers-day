@@ -396,32 +396,23 @@
     .pdf-page {
       page-break-after: always;
       break-after: page;
-      padding: 10px;
+      padding: 20px;
       background: #ffffff;
+      color: #1e293b;
     }
     .pdf-page:last-child {
       page-break-after: avoid;
       break-after: avoid;
     }
 
-    /* Print styling rules */
-    @media print {
-      body {
-        background: white;
-      }
-      .leaderboard-header, .summary-cards, .emoji-summary-card, .tracker-card, .action-btn, .global-pdf-btn, .message-btn, .rating-badge-btn, .close-btn {
-        display: none !important;
-      }
-      .modal-overlay {
-        position: relative;
-        display: block !important;
-        background: none;
-      }
-      .modal-content {
-        box-shadow: none;
-        max-width: 100%;
-        max-height: none;
-      }
+    /* Off-screen PDF container styling (Replaces display:none to allow html2canvas rendering) */
+    #printable-pdf-template {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 800px;
+      background: #ffffff;
+      visibility: visible;
     }
   </style>
 </head>
@@ -558,8 +549,8 @@
     </div>
   </div>
 
-  <!-- Printable Hidden Single-PDF Container -->
-  <div id="printable-pdf-template" style="display: none; width: 100%; background: #ffffff;">
+  <!-- Printable Off-Screen Single-PDF Container -->
+  <div id="printable-pdf-template">
     <div id="pdf-master-content"></div>
   </div>
 
@@ -570,7 +561,6 @@
     let submittedStudentsByClass = {}; 
     let masterClassRoster = JSON.parse(localStorage.getItem('masterClassRoster') || '{}');
 
-    // Sequential 1-5 mapping left-to-right matching the form options
     const impressionFaceEmojis = [
       { key: 1, emoji: "😡", label: "1 Point - Angry" },
       { key: 2, emoji: "🙁", label: "2 Points - Sad" },
@@ -956,7 +946,6 @@
         return;
       }
 
-      const container = document.getElementById('printable-pdf-template');
       const masterContent = document.getElementById('pdf-master-content');
 
       let combinedHTML = `
@@ -1017,20 +1006,22 @@
       });
 
       masterContent.innerHTML = combinedHTML;
-      container.style.display = 'block';
 
-      const opt = {
-        margin:       [0.4, 0.4, 0.4, 0.4],
-        filename:     `OM_Public_School_All_Teachers_Master_Feedback_Report.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] }
-      };
+      // Small timeout ensures the DOM renders full innerHTML height before html2pdf captures canvas
+      setTimeout(() => {
+        const opt = {
+          margin:       [0.4, 0.4, 0.4, 0.4],
+          filename:     `OM_Public_School_All_Teachers_Master_Feedback_Report.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, logging: false },
+          jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+          pagebreak:    { mode: ['css', 'legacy'] }
+        };
 
-      html2pdf().set(opt).from(container).save().then(() => {
-        container.style.display = 'none';
-      });
+        html2pdf().set(opt).from(masterContent).save().then(() => {
+          masterContent.innerHTML = '';
+        });
+      }, 300);
     }
 
     function closeModal(id) {
