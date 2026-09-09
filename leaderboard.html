@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OM Public School - Teacher Points Leaderboard</title>
+  <!-- Included html2pdf library for generating printable PDF documents -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -133,6 +135,23 @@
     }
     .action-btn:hover {
       background: #4338ca;
+    }
+    .pdf-btn {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: background 0.2s ease;
+    }
+    .pdf-btn:hover {
+      background: #047857;
     }
     .tracker-select-row {
       display: flex;
@@ -369,6 +388,26 @@
       font-size: 0.85rem;
       outline: none;
     }
+
+    /* Print styling rules */
+    @media print {
+      body {
+        background: white;
+      }
+      .leaderboard-header, .summary-cards, .emoji-summary-card, .tracker-card, .action-btn, .pdf-btn, .message-btn, .rating-badge-btn, .close-btn {
+        display: none !important;
+      }
+      .modal-overlay {
+        position: relative;
+        display: block !important;
+        background: none;
+      }
+      .modal-content {
+        box-shadow: none;
+        max-width: 100%;
+        max-height: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -445,7 +484,7 @@
             <th>Total Points</th>
             <th>Avg Impression</th>
             <th>Top Qualities</th>
-            <th>Wishes</th>
+            <th>Wishes & Feedback</th>
           </tr>
         </thead>
         <tbody id="leaderboard-body">
@@ -468,12 +507,15 @@
     </div>
   </div>
 
-  <!-- Wishes Modal -->
+  <!-- Wishes & Detailed PDF Printable Modal -->
   <div class="modal-overlay" id="messages-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modal-teacher-name">Student Wishes</h3>
-        <button class="close-btn" onclick="closeModal('messages-modal')">&times;</button>
+        <h3 id="modal-teacher-name">Student Feedback & Wishes</h3>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button class="pdf-btn" id="modal-download-pdf-btn">📄 Download Detailed PDF</button>
+          <button class="close-btn" onclick="closeModal('messages-modal')">&times;</button>
+        </div>
       </div>
       <div class="modal-body" id="modal-body-content"></div>
     </div>
@@ -495,6 +537,23 @@
         </p>
         <textarea id="roster-input" placeholder="Grade 6, AARADHYA RAHUL PAWAR&#10;Grade 6, AAROHI GANESH PATIL"></textarea>
         <button class="action-btn" onclick="saveRoster()">Save Roster Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Hidden PDF Template Container -->
+  <div id="printable-pdf-template" style="display: none; padding: 20px; font-family: Arial, sans-serif; background: #ffffff;">
+    <div style="text-align: center; border-bottom: 2px solid #4f46e5; padding-bottom: 12px; margin-bottom: 20px;">
+      <h2 style="color: #1e293b; font-size: 20px; margin-bottom: 4px;">OM PUBLIC SCHOOL</h2>
+      <h3 style="color: #4f46e5; font-size: 15px; font-weight: 600;">Teacher Appreciation Detailed Feedback Report</h3>
+    </div>
+    
+    <div id="pdf-teacher-header" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <h4 style="font-size: 14px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; margin-bottom: 12px;">Detailed Feedback Entries</h4>
+      <div id="pdf-feedback-list" style="display: flex; flex-direction: column; gap: 10px;">
       </div>
     </div>
   </div>
@@ -627,9 +686,14 @@
           </td>
           <td>${topTags}</td>
           <td>
-            <button class="message-btn" onclick="openMessages('${encodedName}')">
-              💬 ${msgCount} ${msgCount === 1 ? 'Wish' : 'Wishes'}
-            </button>
+            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+              <button class="message-btn" onclick="openMessages('${encodedName}')">
+                💬 ${msgCount} ${msgCount === 1 ? 'Wish' : 'Wishes'}
+              </button>
+              <button class="pdf-btn" onclick="downloadTeacherFeedbackPDF('${encodedName}')" title="Download Printable PDF Report">
+                📄 PDF
+              </button>
+            </div>
           </td>
         `;
         tbody.appendChild(row);
@@ -859,9 +923,14 @@
       const modal = document.getElementById('messages-modal');
       const title = document.getElementById('modal-teacher-name');
       const content = document.getElementById('modal-body-content');
+      const pdfBtn = document.getElementById('modal-download-pdf-btn');
 
-      title.innerText = `Wishes for ${teacherName}`;
+      title.innerText = `Wishes & Feedback for ${teacherName}`;
       content.innerHTML = '';
+
+      pdfBtn.onclick = function() {
+        downloadTeacherFeedbackPDF(encodedName);
+      };
 
       if (!teacherData || !teacherData.messages || teacherData.messages.length === 0) {
         content.innerHTML = '<p style="text-align: center; color: #64748b; padding: 1rem;">No student comments submitted yet.</p>';
@@ -874,8 +943,11 @@
             ? `${msg.studentName || 'Anonymous'} ${msg.grade ? '(' + msg.grade + ')' : ''}`
             : 'Student';
 
+          const ratingScore = msg.rating || msg.impression || msg.score;
+          const ratingText = ratingScore ? ` • Rating: ${ratingScore}/5` : '';
+
           card.innerHTML = `
-            <div class="comment-meta">👤 ${studentInfo}</div>
+            <div class="comment-meta">👤 ${studentInfo}${ratingText}</div>
             <div class="comment-text">"${msg.text}"</div>
           `;
           content.appendChild(card);
@@ -883,6 +955,75 @@
       }
 
       modal.style.display = 'flex';
+    }
+
+    // Function to generate and download a printable PDF report with every detail
+    function downloadTeacherFeedbackPDF(encodedName) {
+      const teacherName = decodeURIComponent(encodedName);
+      const teacherData = leaderboardCache[teacherName] || {};
+      const container = document.getElementById('printable-pdf-template');
+      const headerBox = document.getElementById('pdf-teacher-header');
+      const feedbackList = document.getElementById('pdf-feedback-list');
+
+      const topQualitiesStr = (teacherData.topQualities && teacherData.topQualities.length > 0)
+        ? teacherData.topQualities.join(', ')
+        : 'N/A';
+
+      headerBox.innerHTML = `
+        <div>
+          <h3 style="font-size: 16px; color: #1e293b; margin-bottom: 4px;"><strong>Teacher:</strong> ${teacherName}</h3>
+          <p style="font-size: 12px; color: #475569;"><strong>Top Qualities:</strong> ${topQualitiesStr}</p>
+        </div>
+        <div style="text-align: right;">
+          <p style="font-size: 13px; color: #3730a3; font-weight: bold;">Total Points: ${teacherData.totalPoints || 0} Pts</p>
+          <p style="font-size: 12px; color: #854d0e; font-weight: bold;">Avg Impression: 😊 ${teacherData.avgRating || '0.0'} / 5.0</p>
+        </div>
+      `;
+
+      feedbackList.innerHTML = '';
+
+      if (!teacherData.messages || teacherData.messages.length === 0) {
+        feedbackList.innerHTML = '<p style="font-size: 12px; color: #64748b; font-style: italic;">No student feedback recorded yet.</p>';
+      } else {
+        teacherData.messages.forEach((msg, idx) => {
+          const item = document.createElement('div');
+          item.style.padding = '8px 12px';
+          item.style.border = '1px solid #e2e8f0';
+          item.style.borderRadius = '6px';
+          item.style.background = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+
+          const studentInfo = (msg.studentName || msg.grade) 
+            ? `${msg.studentName || 'Anonymous'} ${msg.grade ? '(' + msg.grade + ')' : ''}`
+            : 'Student';
+
+          const score = msg.rating || msg.impression || msg.score;
+          const scoreDisplay = score ? ` | Rating: ${score}/5` : '';
+
+          item.innerHTML = `
+            <div style="font-size: 11px; font-weight: bold; color: #4f46e5; margin-bottom: 3px;">
+              #${idx + 1}. Student: ${studentInfo}${scoreDisplay}
+            </div>
+            <div style="font-size: 12px; color: #334155; line-height: 1.4;">
+              "${msg.text || 'No comment provided.'}"
+            </div>
+          `;
+          feedbackList.appendChild(item);
+        });
+      }
+
+      container.style.display = 'block';
+
+      const opt = {
+        margin:       [0.5, 0.5, 0.5, 0.5],
+        filename:     `${teacherName.replace(/\s+/g, '_')}_Feedback_Report.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(container).save().then(() => {
+        container.style.display = 'none';
+      });
     }
 
     function closeModal(id) {
